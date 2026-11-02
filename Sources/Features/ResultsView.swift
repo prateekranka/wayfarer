@@ -69,6 +69,7 @@ struct ResultsView: View {
                     .frame(height: dynamicTypeSize.isAccessibilitySize ? max(620, geometry.size.height) : min(620, max(290, geometry.size.height - 190)))
                     .accessibilityIdentifier("edit-pager")
                     variantSelector
+                    LookControls()
                     let layout = dynamicTypeSize.isAccessibilitySize ? AnyLayout(VStackLayout(alignment: .leading, spacing: 4)) : AnyLayout(HStackLayout(spacing: 16))
                     layout {
                         Button { showEditor = true } label: {
@@ -131,6 +132,34 @@ struct ResultsView: View {
     }
 }
 
+/// The switch and strength slider for the style's color look. The slider saves
+/// when the finger lifts, so dragging does not rebuild the preview many times.
+struct LookControls: View {
+    @Environment(AppStore.self) private var store
+    @State private var draft: Double?
+    private var settings: LookSettings { store.project?.look ?? LookSettings() }
+    private var lookName: String { store.selectedPlan.map { ColorLook.style(for: $0.intent).name } ?? "Style" }
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Toggle(isOn: Binding(get: { settings.isEnabled }, set: { value in store.update { $0.look.isEnabled = value } })) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Color look").font(.subheadline.weight(.semibold))
+                    Text(lookName).font(.caption).foregroundStyle(Theme.secondary)
+                }
+            }.frame(minHeight: 44).accessibilityIdentifier("look-enabled")
+            if settings.isEnabled {
+                Slider(value: Binding(get: { draft ?? settings.strength }, set: { draft = $0 }), in: 0.1...1, step: 0.1) { editing in
+                    guard !editing, let value = draft else { return }
+                    draft = nil
+                    store.update { $0.look.strength = value }
+                }.accessibilityLabel("Look strength")
+                    .accessibilityValue("\(Int(((draft ?? settings.strength) * 100).rounded())) percent")
+                    .accessibilityIdentifier("look-strength")
+            }
+        }
+    }
+}
+
 struct EditStyleInfoView: View {
     @Environment(\.dismiss) private var dismiss
     let plans: [MontagePlan]
@@ -175,6 +204,7 @@ struct MontagePlayer: View {
         let plan: MontagePlan
         let ratio: OutputRatio?
         let originalSound: Double?
+        let look: LookSettings?
         let musicFile: String?
         let useProxy: Bool
         let needsGeneration: Bool
@@ -183,7 +213,7 @@ struct MontagePlayer: View {
     }
     private var configuration: PreviewConfiguration {
         PreviewConfiguration(plan: plan, ratio: store.project?.outputRatio,
-            originalSound: store.project?.originalSound, musicFile: store.project?.music?.fileName,
+            originalSound: store.project?.originalSound, look: store.project?.look, musicFile: store.project?.music?.fileName,
             useProxy: useProxy, needsGeneration: store.project?.needsGeneration == true,
             isSelected: isSelected, isActive: isActive)
     }

@@ -252,7 +252,7 @@ final class AppStore {
     func update(_ action: (inout MontageProject) -> Void) {
         guard var value = project else { return }
         let old = value; action(&value); project = value
-        if old.planningSettings != value.planningSettings || old.outputRatio != value.outputRatio || old.originalSound != value.originalSound {
+        if old.planningSettings != value.planningSettings || old.outputRatio != value.outputRatio || old.originalSound != value.originalSound || old.look != value.look {
             invalidateExport()
         }
         persist()

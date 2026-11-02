@@ -218,7 +218,7 @@ public actor CompositionBuilder {
 
         // Match shots across the whole edit, then apply the style's look.
         let corrections = ShotCorrection.matched(measurements)
-        let look = ColorLook.style(for: plan.intent)
+        let look = ColorLook.style(for: plan.intent).adjusted(by: project.look)
         let videoInstructions: [any AVVideoCompositionInstructionProtocol] = placedShots.enumerated().map { index, shot -> any AVVideoCompositionInstructionProtocol in
             LookInstruction(timeRange: shot.timeRange, trackID: shot.trackID, transform: shot.transform,
                             correction: corrections[index], look: look)

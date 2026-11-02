@@ -201,6 +201,18 @@ public struct ShotCorrection: Codable, Equatable, Sendable {
 
 // MARK: - Style looks
 
+/// The user's choice for how much of the style look to use.
+/// Shot correction is not affected, so clips still match when the look is off.
+public struct LookSettings: Codable, Equatable, Sendable {
+    public var isEnabled: Bool
+    /// 0 is no look. 1 is the full look.
+    public var strength: Double
+
+    public init(isEnabled: Bool = true, strength: Double = 1) {
+        self.isEnabled = isEnabled; self.strength = strength
+    }
+}
+
 /// A creative color look for one edit style.
 ///
 /// Rendering bakes `apply(_:)` into a 3D lookup table (LUT), then adds grain
@@ -282,6 +294,18 @@ public struct ColorLook: Codable, Hashable, Sendable, Identifiable {
                       highlightRollOff: 0.2, shadowTint: GradeRGB(-0.01, 0, 0.015),
                       skinProtection: 0.4, vignette: 0.2)
         }
+    }
+
+    /// This look scaled by the user's settings. Strength also scales grain and
+    /// the vignette, because they are not part of the LUT.
+    public func adjusted(by settings: LookSettings) -> ColorLook {
+        let amount = settings.isEnabled ? ColorMath.clamp(settings.strength) : 0
+        guard amount > 0 else { return .neutral }
+        var result = self
+        result.strength = ColorMath.clamp(strength) * amount
+        result.grain = grain * amount
+        result.vignette = vignette * amount
+        return result
     }
 
     /// Applies the color part of the look to one gamma-encoded sRGB color.

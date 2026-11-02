@@ -115,7 +115,9 @@ Each edit style has its own look (`ColorLook.style(for:)`), applied automaticall
 
 The look's color is baked into a 33-point 3D LUT that Core Image applies in sRGB. Grain and vignette are added after the LUT. Every look keeps gray tones in order, stays in range, and keeps skin tones closer to the original. Pure tests in `CoreTests/ColorGradingTests.swift` check this.
 
-HDR clips are converted to SDR before drawing, and the output is tagged as Rec. 709. Changing the look math or presets requires a new `ColorLook.version`, so cached previews render again. There is no user control for the look yet.
+HDR clips are converted to SDR before drawing, and the output is tagged as Rec. 709. Changing the look math or presets requires a new `ColorLook.version`, so cached previews render again.
+
+The results screen has a Color look switch and a strength slider. They are saved per project and apply to every edit in it. Strength scales the look's color, grain, and vignette. Shot correction stays on, so clips still match when the look is off. Changing them refreshes the preview and clears a finished export, but does not require new edits.
 
 Final export uses AVAssetExportSession's async API and state sequence. Vertical output is 1080 × 1920. The other ratios use 1080-class dimensions. The exporter writes a project-owned partial MP4 and commits it only after success. Cancellation or failure removes only that partial file and preserves the project.
 
@@ -172,7 +174,7 @@ In Debug builds, Project options → Editing decisions shows processing times, s
 - Sparse sampling can miss brief moments in very long clips. Upgrade to hierarchical sampling around promising regions.
 - Motion, blur, exposure, and duplicate detection use practical heuristics. Add optical flow and calibrated feature-print or model embeddings behind the analysis boundary.
 - Cropping uses a representative subject anchor. Add time-varying anchors for subject tracking.
-- Color looks are fixed per style and have no strength control. Shot correction is one setting per shot, so light that changes during a shot is not followed. HDR output is not supported.
+- Each style has one fixed look, with one strength per project. Shot correction is one setting per shot, so light that changes during a shot is not followed. HDR output is not supported.
 - Capture dates may be unavailable for selected media. Use imported order as a fallback and keep chronology soft.
 - Vocals, confirmed downbeats, smiles, and lyric matching remain future features.
 - Original sound uses a global level. Future audio-event analysis can raise laughter, waves, or speech selectively.

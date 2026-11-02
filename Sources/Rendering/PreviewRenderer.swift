@@ -16,11 +16,12 @@ actor PreviewRenderer {
         let subject: SubjectAnchor?
     }
     private struct CacheKey: Encodable {
-        let version = 8
+        let version = 9
         let ranges: [SourceRange]
-        /// The style look and its math version. Shot correction depends only
-        /// on the source ranges, which are already part of the key.
+        /// The style look, its strength, and its math version. Shot correction
+        /// depends only on the source ranges, which are already part of the key.
         let look: String
+        let lookStrength: Double
         let lookVersion = ColorLook.version
         let musicStart: Double
         let ratio: OutputRatio
@@ -33,7 +34,8 @@ actor PreviewRenderer {
         let ranges = plan.segments.map {
             SourceRange(assetID: $0.sourceAssetID, start: $0.sourceStartTime, duration: $0.duration, subject: $0.subject)
         }
-        let key = CacheKey(ranges: ranges, look: ColorLook.style(for: plan.intent).id,
+        let look = ColorLook.style(for: plan.intent).adjusted(by: project.look)
+        let key = CacheKey(ranges: ranges, look: look.id, lookStrength: look.strength,
                            musicStart: plan.musicStartTime, ratio: project.outputRatio,
                            originalSound: project.originalSound, musicFile: project.music?.fileName)
         let encoder = JSONEncoder(); encoder.outputFormatting = [.sortedKeys]

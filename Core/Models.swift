@@ -302,8 +302,14 @@ public struct MontageProject: Codable, Identifiable, Sendable, Equatable {
     public var stage: ProjectStage = .importing
     public var exportFileName: String?
     public var warnings: [String] = []
+    /// Optional so projects saved before this setting existed still decode.
+    public var lookSettings: LookSettings?
     public init(id: UUID = UUID(), name: String, createdAt: Date = Date()) {
         self.id = id; self.name = name; self.createdAt = createdAt
+    }
+    public var look: LookSettings {
+        get { lookSettings ?? LookSettings() }
+        set { lookSettings = newValue }
     }
     public var planningSettings: PlanningSettings {
         PlanningSettings(duration: targetDuration, intent: intent, parameters: parameters,

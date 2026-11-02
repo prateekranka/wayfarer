@@ -85,6 +85,30 @@ private func linearLuma(_ shot: ShotMeasurement, _ correction: ShotCorrection) -
     #expect(highlight.r > highlight.b)
 }
 
+@Test func lookSettingsScaleColorGrainAndVignette() {
+    let look = ColorLook.style(for: .cinematic)
+    let half = look.adjusted(by: LookSettings(strength: 0.5))
+    #expect(half.strength == 0.5)
+    #expect(half.grain == look.grain * 0.5)
+    #expect(half.vignette == look.vignette * 0.5)
+    #expect(look.adjusted(by: LookSettings()) == look)
+    #expect(look.adjusted(by: LookSettings(isEnabled: false)) == .neutral)
+    #expect(look.adjusted(by: LookSettings(strength: 0)) == .neutral)
+}
+
+@Test func lookSettingsSurviveSavingAndOlderProjectsStillOpen() throws {
+    var project = MontageProject(name: "Trip")
+    project.look = LookSettings(isEnabled: true, strength: 0.4)
+    let saved = try JSONEncoder().encode(project)
+    #expect(try JSONDecoder().decode(MontageProject.self, from: saved).look.strength == 0.4)
+
+    var older = try #require(JSONSerialization.jsonObject(with: saved) as? [String: Any])
+    older.removeValue(forKey: "lookSettings")
+    let reopened = try JSONDecoder().decode(MontageProject.self, from: JSONSerialization.data(withJSONObject: older))
+    #expect(reopened.lookSettings == nil)
+    #expect(reopened.look == LookSettings())
+}
+
 @Test func lookStrengthBlendsTowardOriginal() {
     var half = ColorLook.style(for: .beatSync)
     half.strength = 0.5
