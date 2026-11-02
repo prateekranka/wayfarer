@@ -531,7 +531,11 @@ public struct MontagePlanner: MontagePlanning, Sendable {
         guard plan.segments.count > 1 else { return }
         let lookup = Dictionary(uniqueKeysWithValues: candidates.map { ($0.id, $0) })
         let events = request.music.events.filter {
-            $0.kind == .strongBeat || $0.kind == .beat || $0.kind == .transition
+            [.strongBeat, .beat, .downbeat, .drop, .transition].contains($0.kind)
+        }
+        // Prefer the strongest places to cut: a drop, then the start of a bar.
+        func pull(_ event: MusicEvent) -> Double {
+            event.strength * 0.035 + (event.kind == .drop ? 0.20 : event.kind == .downbeat ? 0.08 : 0)
         }
         let recipe = StyleRecipe.recipe(for: request.intent)
         let shortest = max(0.5, recipe.shortestShot)
@@ -545,7 +549,7 @@ public struct MontagePlanner: MontagePlanning, Sendable {
             let tolerance = recipe.cutTolerance
             let eligible = events.filter { abs($0.time - desired) <= tolerance }
             guard let event = eligible.min(by: {
-                abs($0.time - desired) - $0.strength * 0.035 < abs($1.time - desired) - $1.strength * 0.035
+                abs($0.time - desired) - pull($0) < abs($1.time - desired) - pull($1)
             }) else { continue }
             let shift = roundToTick(event.time - desired)
             let leftDuration = plan.segments[index].duration + shift
@@ -556,7 +560,9 @@ public struct MontagePlanner: MontagePlanning, Sendable {
             plan.segments[index + 1].duration = rightDuration
             plan.segments[index].sourceStartTime = min(plan.segments[index].sourceStartTime, left.sourceEndTime - leftDuration)
             plan.segments[index + 1].sourceStartTime = min(plan.segments[index + 1].sourceStartTime, right.sourceEndTime - rightDuration)
-            plan.segments[index].reasons.append(event.kind == .strongBeat ? "cut aligned with a strong beat" : "cut aligned with the music")
+            plan.segments[index].reasons.append(event.kind == .drop ? "cut aligned with the drop"
+                : event.kind == .downbeat ? "cut aligned with the start of a bar"
+                : event.kind == .strongBeat ? "cut aligned with a strong beat" : "cut aligned with the music")
             elapsed += shift
         }
     }
@@ -644,6 +650,9 @@ public struct MontagePlanner: MontagePlanning, Sendable {
         starts.append(contentsOf: music.sections.map(\.start).filter { $0 >= 0 && $0 <= latest })
         starts.append(contentsOf: music.events.filter { $0.kind == .strongBeat || $0.kind == .build }
             .map { max(0, min(latest, $0.time - min(1.0, target / 8))) })
+        // Start early enough that a drop lands about two-thirds into the edit.
+        let drops = music.events.filter { $0.kind == .drop }
+        starts.append(contentsOf: drops.map { max(0, min(latest, $0.time - target * 2 / 3)) })
         let unique = Array(Set(starts.map { min(latest, max(0, $0)) })).sorted()
         guard !unique.isEmpty else { return 0 }
         let energy = MomentScorer.clamp(parameters.energy)
@@ -659,9 +668,11 @@ public struct MontagePlanner: MontagePlanning, Sendable {
             let match: Double = 1 - abs(averageEnergy(music, start: start, duration: target) - desiredEnergy)
             let atSectionStart = music.sections.contains(where: { abs($0.start - start) < 0.25 })
             let sectionBonus: Double = atSectionStart ? 0.06 : 0.0
+            let holdsPayoff = drops.contains { $0.time >= start + target * 0.4 && $0.time <= start + target * 0.9 }
+            let payoffBonus: Double = holdsPayoff ? 0.20 : 0
             let noiseID = UInt64(max(0, Int(start * 600)))
             let noise = deterministicNoise(noiseID, seed: seed, variant: variant) * 0.04
-            let score = match + sectionBonus + noise
+            let score = match + sectionBonus + payoffBonus + noise
             ranked.append((start: start, score: score))
         }
         ranked.sort { lhs, rhs in

@@ -40,7 +40,7 @@ public struct PlannedEdit: Codable, Equatable, Sendable {
 /// gives the same list, and a changed shot can never leave a stale zoom behind.
 public enum EditPlanner {
     /// Change this when edit choices change, so cached previews render again.
-    public static let version = 1
+    public static let version = 2
     static let frame = 1.0 / 30
     /// 2 frames up and 10 frames down, from the edit spec's Z2 defaults.
     static let pulseAttack = 2 * frame
@@ -63,8 +63,12 @@ public enum EditPlanner {
         let peak = music.flatMap { RecipePacing.peakTime(in: $0, musicStart: plan.musicStartTime, duration: plan.duration) }
         let rest = (peak ?? 0) - restBeats * (beat ?? 0.5)
         let accents = (music?.events ?? [])
-            .filter { $0.kind == .strongBeat || $0.kind == .beat }
-            .map { (time: $0.time - plan.musicStartTime, strength: $0.strength) }
+            .filter { [.strongBeat, .beat, .downbeat, .drop].contains($0.kind) }
+            // The start of a bar and a bass hit carry a zoom best.
+            .map { event -> (time: Double, strength: Double) in
+                let weight = (event.kind == .downbeat ? 0.3 : 0) + (event.band == .low ? 0.1 : 0)
+                return (event.time - plan.musicStartTime, event.strength + weight)
+            }
             .filter { $0.time >= 0 && $0.time < plan.duration }
             .sorted { $0.time < $1.time }
 

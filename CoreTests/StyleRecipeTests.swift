@@ -97,3 +97,20 @@ private func moment(faces: Double = 0, people: Double = 0, motion: Double = 0.5,
     #expect(pacing.varietyScore(still, after: still) < pacing.varietyScore(moving, after: still))
     #expect(pacing.varietyScore(moment(motion: 0.9, scenery: 0.85), after: moment(faces: 0.33, motion: 0.9)) == 0)
 }
+
+@Test func shotsGetShorterAsABuildRises() throws {
+    var music = song(bpm: 120)
+    music.builds = [MusicBuild(start: 20, end: 30, rise: 8)]
+    let pacing = RecipePacing(recipe: .recipe(for: .travel), music: music, musicStart: 0)
+    let early = try #require(pacing.targetDuration(at: 21))
+    let late = try #require(pacing.targetDuration(at: 29))
+    #expect(late < early)
+    let calm = RecipePacing(recipe: .recipe(for: .cinematic), music: music, musicStart: 0)
+    #expect(calm.targetDuration(at: 21) == calm.targetDuration(at: 29))
+}
+
+@Test func aDropIsThePeakOfTheSong() {
+    let music = MusicAnalysis(duration: 60, events: [MusicEvent(time: 20, kind: .build, strength: 1),
+                                                     MusicEvent(time: 24, kind: .drop, strength: 0.5)])
+    #expect(RecipePacing.peakTime(in: music, musicStart: 10, duration: 30) == 14)
+}

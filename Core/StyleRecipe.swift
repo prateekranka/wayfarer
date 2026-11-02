@@ -19,18 +19,22 @@ public struct StyleRecipe: Codable, Equatable, Sendable {
     /// Which zooms this style may use, and how strong they are, from 0 to 1.
     public var zooms: [ZoomKind]
     public var zoomIntensity: Double
+    /// Whether shots get shorter as a build rises toward its payoff.
+    public var acceleratesIntoBuilds: Bool
 
     public enum Opening: String, Codable, Sendable { case wide, people, strongest }
     public enum Ending: String, Codable, Sendable { case peopleOrSunset, calm }
 
     public init(shortestShot: Double, longestShot: Double, beatsWhenLoud: Double,
                 beatsWhenQuiet: Double, mostMomentsPerClip: Int, cutTolerance: Double,
-                opening: Opening, ending: Ending, zooms: [ZoomKind] = [], zoomIntensity: Double = 0) {
+                opening: Opening, ending: Ending, zooms: [ZoomKind] = [], zoomIntensity: Double = 0,
+                acceleratesIntoBuilds: Bool = false) {
         self.shortestShot = shortestShot; self.longestShot = longestShot
         self.beatsWhenLoud = beatsWhenLoud; self.beatsWhenQuiet = beatsWhenQuiet
         self.mostMomentsPerClip = mostMomentsPerClip; self.cutTolerance = cutTolerance
         self.opening = opening; self.ending = ending
         self.zooms = zooms; self.zoomIntensity = zoomIntensity
+        self.acceleratesIntoBuilds = acceleratesIntoBuilds
     }
 
     private static let recipes: [String: StyleRecipe] = {
@@ -69,6 +73,7 @@ struct RecipePacing: Sendable {
     let recipe: StyleRecipe
     private let beatLength: Double?
     private let energy: [EnergySample]
+    private let builds: [MusicBuild]
     private let meanEnergy: Double
     private let musicStart: Double
     /// When the song's biggest moment arrives, in edit time.
@@ -86,13 +91,15 @@ struct RecipePacing: Sendable {
         self.peakTime = Self.peakTime(in: music, musicStart: musicStart, duration: targetDuration)
         self.beatLength = music.bpm.flatMap { $0.isFinite && $0 > 0 ? 60 / $0 : nil }
         self.energy = music.energy.sorted { $0.time < $1.time }
+        self.builds = music.builds ?? []
         self.meanEnergy = energy.isEmpty ? 0 : energy.reduce(0) { $0 + $1.value } / Double(energy.count)
     }
 
     /// When the song's biggest moment arrives in the edit, if it falls inside it.
     static func peakTime(in music: MusicAnalysis, musicStart: Double, duration: Double) -> Double? {
         let inEdit = { (time: Double) in time >= musicStart && time <= musicStart + duration }
-        let peak = music.events.filter { $0.kind == .build && inEdit($0.time) }.max { $0.strength < $1.strength }?.time
+        let peak = music.events.filter { $0.kind == .drop && inEdit($0.time) }.max { $0.strength < $1.strength }?.time
+            ?? music.events.filter { $0.kind == .build && inEdit($0.time) }.max { $0.strength < $1.strength }?.time
             ?? music.energy.filter { inEdit($0.time) }.max { $0.value < $1.value }?.time
         return peak.map { $0 - musicStart }
     }
@@ -114,7 +121,20 @@ struct RecipePacing: Sendable {
         guard let beatLength, let level = energy(at: musicStart + elapsed) else { return nil }
         let beats = level >= meanEnergy ? recipe.beatsWhenLoud : recipe.beatsWhenQuiet
         guard beats > 0 else { return nil }
-        return min(recipe.longestShot, max(recipe.shortestShot, beats * beatLength))
+        let wanted = beats * buildPace(at: musicStart + elapsed) * beatLength
+        return min(recipe.longestShot, max(recipe.shortestShot, wanted))
+    }
+
+    /// Shots halve as a build nears its top, like the spec's accelerating cuts.
+    private func buildPace(at time: Double) -> Double {
+        guard recipe.acceleratesIntoBuilds, recipe.beatsWhenLoud > 0,
+              let build = builds.first(where: { time >= $0.start && time < $0.end }) else { return 1 }
+        let progress = (time - build.start) / (build.end - build.start)
+        // Measured from the loud pace, so a quiet start still speeds up.
+        let loudShare = recipe.beatsWhenLoud / max(recipe.beatsWhenQuiet, recipe.beatsWhenLoud)
+        let level = energy(at: time) ?? 0
+        let base = level >= meanEnergy ? 1 : loudShare
+        return base * (progress < 0.5 ? 1 : progress < 0.8 ? 0.5 : 0.25)
     }
 
     /// A score change for placing a shot. Zero or below.

@@ -134,13 +134,25 @@ public struct CandidateMoment: Codable, Identifiable, Sendable, Equatable {
     }
 }
 
-public enum MusicEventKind: String, Codable, Sendable { case beat, strongBeat, onset, build, transition }
+public enum MusicEventKind: String, Codable, Sendable { case beat, strongBeat, onset, build, transition, downbeat, drop, silence }
+/// Which part of the sound carried a hit.
+public enum MusicBand: String, Codable, Sendable { case low, mid, high }
+/// A sustained rise in the song. `rise` is how much it grew, in decibels.
+public struct MusicBuild: Codable, Sendable, Equatable {
+    public var start: Double
+    public var end: Double
+    public var rise: Double
+    public init(start: Double, end: Double, rise: Double) {
+        self.start = start; self.end = end; self.rise = rise
+    }
+}
 public struct MusicEvent: Codable, Sendable, Equatable {
     public var time: Double
     public var kind: MusicEventKind
     public var strength: Double
-    public init(time: Double, kind: MusicEventKind, strength: Double) {
-        self.time = time; self.kind = kind; self.strength = strength
+    public var band: MusicBand?
+    public init(time: Double, kind: MusicEventKind, strength: Double, band: MusicBand? = nil) {
+        self.time = time; self.kind = kind; self.strength = strength; self.band = band
     }
 }
 public struct MusicSection: Codable, Sendable, Equatable {
@@ -161,6 +173,9 @@ public struct MusicAnalysis: Codable, Sendable, Equatable {
     public var events: [MusicEvent]
     public var sections: [MusicSection]
     public var energy: [EnergySample]
+    /// Optional so songs analyzed before these existed still decode.
+    public var beatsPerBar: Int?
+    public var builds: [MusicBuild]?
     public init(duration: Double, bpm: Double? = nil, confidence: Double = 0,
                 events: [MusicEvent] = [], sections: [MusicSection] = [], energy: [EnergySample] = []) {
         self.duration = duration; self.bpm = bpm; self.confidence = confidence

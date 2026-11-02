@@ -66,9 +66,17 @@ No smile, emotion, action, or location claim is fabricated when a classifier is 
 
 ## Understanding music
 
-The audio analyzer uses an AVAssetReader output provider to stream mono Float32 PCM. It measures RMS energy with vDSP, spectral flux with an FFT, and onset peaks. Autocorrelation estimates tempo. The structured result contains energy samples, supported beats, strong onsets, section changes, and sustained builds.
+`MusicAnalysisService` streams mono audio into `MusicSignalAnalyzer` in `Core`, so a long song is never held in memory. Each 12 ms step is split into bass, mids, and highs. Sudden rises in those bands find hits, and each hit records which band carried it.
 
-Tempo estimates can have half-time or double-time ambiguity. A strong beat means a measured high-salience event; it does not claim a verified downbeat. Vocal detection and lyric transcription are not implemented. `TimedLyric` provides the future domain boundary for legitimately obtained timed text.
+Beats come from a search across the whole song that favors strong hits and an even pace. The tempo estimate updates every two seconds, so beats can follow a song that speeds up or slows down. A preference near 120 BPM settles half-time and double-time, which can still be wrong for very slow or very fast songs.
+
+Bars come from bass hits and chord changes at each beat. The analyzer tries four and three beats per bar. If no position stands out, it reports no downbeats rather than guessing, and the planner uses strong beats instead.
+
+It also finds builds, which are rises lasting at least three seconds. Drops are sudden jumps that the song then holds. Pauses are short gaps in the sound. Sections start where the sound changes between groups of four bars. Sections are not named as verse or chorus. Vocals and lyrics are not analyzed. `TimedLyric` provides the future domain boundary for legitimately obtained timed text.
+
+The planner prefers cutting on drops and then the start of a bar, starts the song so a drop lands about two-thirds into the edit, treats the drop as the payoff, and shortens shots near the top of a build in styles that allow it. Songs analyzed by older builds keep working, but only gain these results when analyzed again.
+
+Tests in `CoreTests/MusicSignalAnalyzerTests.swift` score this against generated tracks with known beats, bars, builds, and drops. Generated tracks are cleaner than real music, so real songs still need checking.
 
 Music longer than 30 minutes is rejected. Protected content is rejected. Music must cover the selected montage duration.
 
@@ -184,7 +192,7 @@ In Debug builds, Project options → Editing decisions shows processing times, s
 - Cropping uses a representative subject anchor. Add time-varying anchors for subject tracking.
 - Each style has one fixed look, with one strength per project. Shot correction is one setting per shot, so light that changes during a shot is not followed. HDR output is not supported.
 - Capture dates may be unavailable for selected media. Use imported order as a fallback and keep chronology soft.
-- Vocals, confirmed downbeats, smiles, and lyric matching remain future features.
+- Vocals, smiles, and lyric matching remain future features. Downbeats are estimates, and accuracy on commercial songs has not been measured.
 - Original sound uses a global level. Future audio-event analysis can raise laughter, waves, or speech selectively.
 - Hardware performance, large HDR collections, and iPad layouts require device-specific release validation.
 
