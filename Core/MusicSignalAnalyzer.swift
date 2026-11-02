@@ -34,6 +34,7 @@ public final class MusicSignalAnalyzer {
     private var highPower: [Float] = []
     private var chroma: [Float] = []
     private var frameCount = 0
+    private var bandScale: (low: Float, mid: Float, high: Float) = (1, 1, 1)
 
     public init?() {
         guard let setup = vDSP_create_fftsetup(10, FFTRadix(kFFTRadix2)) else { return nil }
@@ -126,6 +127,8 @@ public final class MusicSignalAnalyzer {
             10 * log10f(pair.0 + pair.1 + high + 1e-10)
         }
         let reference = percentile(loudness, 0.95)
+        bandScale = (1 / max(0.0001, percentile(lowFlux, 0.95)), 1 / max(0.0001, percentile(midFlux, 0.95)),
+                     1 / max(0.0001, percentile(highFlux, 0.95)))
         let energy = energyCurve()
         let envelope = onsetEnvelope()
         let hits = detectHits(envelope)
@@ -134,15 +137,16 @@ public final class MusicSignalAnalyzer {
         let bpm = medianBPM(beats)
         let meter = findDownbeats(beats)
         let silences = detectSilences(loudness, reference: reference)
-        let builds = detectBuilds(loudness)
-        let drops = detectDrops(loudness, reference: reference, hits: hits)
+        let builds = detectBuilds(loudness, reference: reference)
+        let drops = detectDrops(loudness, reference: reference, hits: hits, duration: duration)
         let sections = detectSections(beats: beats, meter: meter, energy: energy, duration: duration)
 
         var events: [MusicEvent] = []
+        let downbeatIndexes = Set(meter?.downbeats ?? [])
         let beatFrames = Set(beats.flatMap { [$0 - 3, $0 - 2, $0 - 1, $0, $0 + 1, $0 + 2, $0 + 3] })
         for (index, beat) in beats.enumerated() {
             let strength = Double(max(envelope[beat], 0.2))
-            let isDownbeat = meter.map { index % $0.beatsPerBar == $0.phase } ?? false
+            let isDownbeat = downbeatIndexes.contains(index)
             let kind: MusicEventKind = isDownbeat ? .downbeat : strength >= 0.55 ? .strongBeat : .beat
             events.append(MusicEvent(time: time(beat), kind: kind, strength: min(1, strength), band: strongestBand(at: beat)))
         }
@@ -222,10 +226,11 @@ public final class MusicSignalAnalyzer {
 
     private func strongestBand(at frame: Int) -> MusicBand {
         let low = max(0, frame - 1), high = min(frameCount - 1, frame + 1)
-        // Bass bins are few and hit hard, so highs need less to count.
-        let bass = lowFlux[low...high].reduce(0, +) * 0.5
-        let mids = midFlux[low...high].reduce(0, +)
-        let highs = highFlux[low...high].reduce(0, +)
+        // Each band is judged against its own hits, because the bands differ
+        // in size and mids would otherwise win almost every time.
+        let bass = lowFlux[low...high].reduce(0, +) * bandScale.low
+        let mids = midFlux[low...high].reduce(0, +) * bandScale.mid
+        let highs = highFlux[low...high].reduce(0, +) * bandScale.high
         if bass >= mids && bass >= highs { return .low }
         return highs >= mids ? .high : .mid
     }
@@ -332,7 +337,7 @@ public final class MusicSignalAnalyzer {
 
     /// Bars usually start with a bass hit and a chord change. Tries 4 and 3 beats
     /// per bar. Returns nil when no position stands out, rather than guessing.
-    private func findDownbeats(_ beats: [Int]) -> (beatsPerBar: Int, phase: Int)? {
+    private func findDownbeats(_ beats: [Int]) -> (beatsPerBar: Int, downbeats: [Int])? {
         guard beats.count >= 12 else { return nil }
         var scores = [Float](repeating: 0, count: beats.count)
         let lowLevels = beats.map { beat in
@@ -356,22 +361,48 @@ public final class MusicSignalAnalyzer {
         let typical = scores[1..<(scores.count - 1)].reduce(0, +) / Float(scores.count - 2)
         scores[0] = typical; scores[scores.count - 1] = typical
         let combined = zip(standardized(scores, floor: 0.05), standardized(lowLevels, floor: 0.05)).map { $0 + $1 }
-        var best: (beatsPerBar: Int, phase: Int, contrast: Float)?
+        // One skipped beat moves every bar after it, so the bar position may
+        // shift during the song, at a cost that stops it chasing noise.
+        var best: (beatsPerBar: Int, downbeats: [Int], contrast: Float)?
         for size in [4, 3] {
-            for phase in 0..<size {
-                var inside: Float = 0, outside: Float = 0, insideCount: Float = 0, outsideCount: Float = 0
-                for (index, value) in combined.enumerated() where index >= 2 && index < combined.count - 2 {
-                    if index % size == phase { inside += value; insideCount += 1 }
-                    else { outside += value; outsideCount += 1 }
-                }
-                let contrast = inside / max(1, insideCount) - outside / max(1, outsideCount)
-                // Four beats is far more common, so three must clearly win.
-                let adjusted = size == 3 ? contrast * 0.75 : contrast
-                if adjusted > (best?.contrast ?? 0) { best = (size, phase, adjusted) }
-            }
+            let path = barPath(combined, beatsPerBar: size)
+            let chosen = Set(path)
+            let inside = path.map { combined[$0] }.reduce(0, +) / Float(max(1, path.count))
+            let others = combined.indices.filter { !chosen.contains($0) }
+            let outside = others.map { combined[$0] }.reduce(0, +) / Float(max(1, others.count))
+            // Four beats is far more common, so three must clearly win.
+            let contrast = (inside - outside) * (size == 3 ? 0.75 : 1)
+            if contrast > (best?.contrast ?? 0) { best = (size, path, contrast) }
         }
-        guard let best, best.contrast >= 1.5 else { return nil }
-        return (best.beatsPerBar, best.phase)
+        // Identical hits score about 0.7 and clean grooves over 3. Most real songs
+        // land under 0.5, so they report no bars rather than a wrong guess.
+        guard let best, best.contrast >= 1 else { return nil }
+        return (best.beatsPerBar, best.downbeats)
+    }
+
+    /// Picks the best bar position at each beat, and returns the downbeats.
+    private func barPath(_ scores: [Float], beatsPerBar size: Int) -> [Int] {
+        let switchCost: Float = 8
+        var totals = [Float](repeating: 0, count: size)
+        var from = [[Int]]()
+        from.reserveCapacity(scores.count)
+        for (index, score) in scores.enumerated() {
+            let top = totals.enumerated().max { $0.element < $1.element }?.offset ?? 0
+            var next = totals, links = Array(0..<size)
+            for phase in 0..<size where totals[top] - switchCost > totals[phase] {
+                next[phase] = totals[top] - switchCost; links[phase] = top
+            }
+            next[index % size] += score
+            totals = next
+            from.append(links)
+        }
+        var phase = totals.enumerated().max { $0.element < $1.element }?.offset ?? 0
+        var result: [Int] = []
+        for index in scores.indices.reversed() {
+            if index % size == phase { result.append(index) }
+            phase = from[index][phase]
+        }
+        return result.reversed()
     }
 
     private func meanChroma(from start: Int, to end: Int) -> [Float] {
@@ -419,8 +450,9 @@ public final class MusicSignalAnalyzer {
     }
 
     /// A build is a rise that keeps going for at least three seconds.
-    private func detectBuilds(_ loudness: [Float]) -> [MusicBuild] {
+    private func detectBuilds(_ loudness: [Float], reference: Float) -> [MusicBuild] {
         let (curve, step) = shapeCurve(loudness)
+        let smooth = movingAverage(loudness, radius: Int(0.5 / Self.frameTime))
         let shortest = 12, minimumRise: Float = 4, slip: Float = 0.8
         var result: [MusicBuild] = []
         var index = 0
@@ -431,7 +463,9 @@ public final class MusicSignalAnalyzer {
                 if curve[cursor] > peak { peak = curve[cursor]; peakIndex = cursor }
                 cursor += 1
             }
-            if peakIndex - index >= shortest, peak - curve[index] >= minimumRise {
+            // A rise out of silence is a fade-in, not a build.
+            if peakIndex - index >= shortest, peak - curve[index] >= minimumRise,
+               smooth[index * step] >= reference - 25 {
                 result.append(MusicBuild(start: time(index * step), end: time(peakIndex * step), rise: Double(peak - curve[index])))
                 index = peakIndex
             }
@@ -440,42 +474,55 @@ public final class MusicSignalAnalyzer {
         return result
     }
 
-    /// A drop is a sudden jump in level that the song then holds.
-    private func detectDrops(_ loudness: [Float], reference: Float, hits: [Int]) -> [(time: Double, strength: Double)] {
-        let radius = Int(1 / Self.frameTime), step = Int(0.05 / Self.frameTime)
-        var totals = [Float](repeating: 0, count: frameCount + 1)
-        for index in loudness.indices { totals[index + 1] = totals[index] + loudness[index] }
-        var candidates: [(frame: Int, jump: Float)] = []
-        for frame in stride(from: radius * 2, to: frameCount - radius, by: step) {
+    /// A drop is a jump that the song holds for seconds, and the bass must come
+    /// in too. Verses and choruses change level as well, so only the biggest
+    /// jumps in the song count, however loud the song is overall.
+    private func detectDrops(_ loudness: [Float], reference: Float, hits: [Int],
+                             duration: Double) -> [(time: Double, strength: Double)] {
+        let radius = Int(2 / Self.frameTime), step = Int(0.05 / Self.frameTime)
+        guard frameCount > radius * 2 else { return [] }
+        let bass = lowPower.map { 10 * log10f($0 + 1e-10) }
+        func runningTotal(_ values: [Float]) -> [Float] {
+            var totals = [Float](repeating: 0, count: values.count + 1)
+            for index in values.indices { totals[index + 1] = totals[index] + values[index] }
+            return totals
+        }
+        let levels = runningTotal(loudness), bassLevels = runningTotal(bass)
+        func jump(_ totals: [Float], at frame: Int) -> (after: Float, rise: Float) {
             let before = (totals[frame] - totals[frame - radius]) / Float(radius)
             let after = (totals[frame + radius] - totals[frame]) / Float(radius)
-            if after - before >= 6, after >= reference - 12 { candidates.append((frame, after - before)) }
+            return (after, after - before)
         }
-        var result: [(time: Double, strength: Double)] = []
-        var index = 0
-        let spacing = Int(4 / Self.frameTime)
-        while index < candidates.count {
-            var last = index
-            while last + 1 < candidates.count, candidates[last + 1].frame - candidates[last].frame <= step * 2 { last += 1 }
-            guard let best = candidates[index...last].max(by: { $0.jump < $1.jump }) else { break }
-            // The jump's center can sit before the hit. Land on the first hit after it starts.
-            let reach = Int(0.35 / Self.frameTime)
-            let frame = hits.filter { abs($0 - best.frame) <= reach }.min { abs($0 - best.frame) < abs($1 - best.frame) } ?? best.frame
-            if let previous = result.last, Int((time(frame) - previous.time) / Self.frameTime) < spacing {} else {
-                result.append((time(frame), min(1, Double(best.jump) / 15)))
+        var candidates: [(frame: Int, jump: Float)] = []
+        // The music starting is not a drop, so skip the opening seconds.
+        for frame in stride(from: radius * 2, to: frameCount - radius, by: step) {
+            let level = jump(levels, at: frame)
+            if level.rise >= 5, level.after >= reference - 10, jump(bassLevels, at: frame).rise >= 3 {
+                candidates.append((frame, level.rise))
             }
-            index = last + 1
         }
-        return result
+        guard let biggest = candidates.map(\.jump).max() else { return [] }
+        let spacing = Int(15 / Self.frameTime), limit = max(1, Int(duration / 45))
+        var chosen: [(frame: Int, jump: Float)] = []
+        for candidate in candidates.sorted(by: { $0.jump > $1.jump })
+        where candidate.jump >= biggest * 0.6 && chosen.count < limit
+            && !chosen.contains(where: { abs($0.frame - candidate.frame) < spacing }) {
+            chosen.append(candidate)
+        }
+        let reach = Int(0.35 / Self.frameTime)
+        return chosen.sorted { $0.frame < $1.frame }.map { drop in
+            let frame = hits.filter { abs($0 - drop.frame) <= reach }.min { abs($0 - drop.frame) < abs($1 - drop.frame) } ?? drop.frame
+            return (time(frame), min(1, Double(drop.jump) / 15))
+        }
     }
 
     /// Splits the song where its sound changes, comparing the four bars before
     /// each bar with the four bars after it.
-    private func detectSections(beats: [Int], meter: (beatsPerBar: Int, phase: Int)?, energy: [EnergySample],
+    private func detectSections(beats: [Int], meter: (beatsPerBar: Int, downbeats: [Int])?, energy: [EnergySample],
                                 duration: Double) -> [MusicSection] {
         var marks: [Int]
         if let meter {
-            marks = beats.enumerated().filter { $0.offset % meter.beatsPerBar == meter.phase }.map(\.element)
+            marks = meter.downbeats.map { beats[$0] }
         } else if beats.count >= 8 {
             marks = stride(from: 0, to: beats.count, by: 4).map { beats[$0] }
         } else {

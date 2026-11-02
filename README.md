@@ -70,13 +70,13 @@ No smile, emotion, action, or location claim is fabricated when a classifier is 
 
 Beats come from a search across the whole song that favors strong hits and an even pace. The tempo estimate updates every two seconds, so beats can follow a song that speeds up or slows down. A preference near 120 BPM settles half-time and double-time, which can still be wrong for very slow or very fast songs.
 
-Bars come from bass hits and chord changes at each beat. The analyzer tries four and three beats per bar. If no position stands out, it reports no downbeats rather than guessing, and the planner uses strong beats instead.
+Bars come from bass hits and chord changes at each beat. The analyzer tries four and three beats per bar, and the bar position may shift during a song. If the evidence is weak, it reports no downbeats rather than guessing, and the planner uses strong beats instead. This is the common case: on five real songs, only one reported bars.
 
-It also finds builds, which are rises lasting at least three seconds. Drops are sudden jumps that the song then holds. Pauses are short gaps in the sound. Sections start where the sound changes between groups of four bars. Sections are not named as verse or chorus. Vocals and lyrics are not analyzed. `TimedLyric` provides the future domain boundary for legitimately obtained timed text.
+It also finds builds, which are rises lasting at least three seconds. Drops are the song's biggest sustained jumps, and the bass must come in too. Pauses are short gaps in the sound. Sections start where the sound changes between groups of four bars. Sections are not named as verse or chorus. Vocals and lyrics are not analyzed. `TimedLyric` provides the future domain boundary for legitimately obtained timed text.
 
 The planner prefers cutting on drops and then the start of a bar, starts the song so a drop lands about two-thirds into the edit, treats the drop as the payoff, and shortens shots near the top of a build in styles that allow it. Songs analyzed by older builds keep working, but only gain these results when analyzed again.
 
-Tests in `CoreTests/MusicSignalAnalyzerTests.swift` score this against generated tracks with known beats, bars, builds, and drops. Generated tracks are cleaner than real music, so real songs still need checking.
+Tests in `CoreTests/MusicSignalAnalyzerTests.swift` score this against generated tracks with known beats, bars, builds, and drops. Generated tracks are cleaner than real music. Five real songs were used to tune drop, bass, and fade-in handling, but no hand-marked timings were available, so accuracy on real songs is not measured.
 
 Music longer than 30 minutes is rejected. Protected content is rejected. Music must cover the selected montage duration.
 

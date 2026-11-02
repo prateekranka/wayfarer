@@ -199,3 +199,46 @@ func steadyTemposAreFound(bpm: Double, bars: Int) throws {
     let music = try JSONDecoder().decode(MusicAnalysis.self, from: JSONSerialization.data(withJSONObject: object))
     #expect(music.builds == nil)
 }
+
+@Test func aRisingVerseIsNotADrop() throws {
+    var song = Song(seconds: 60)
+    // Small level changes every few seconds, as verses and choruses make.
+    for index in 0..<12 {
+        let start = Double(index) * 5
+        song.tone(from: start, to: start + 5, hertz: [110, 220, 330]) { _ in index.isMultiple(of: 2) ? 0.2 : 0.32 }
+    }
+    for index in 0..<110 { song.kick(at: 1 + Double(index) * 0.5, level: 0.5) }
+    #expect(times(try song.analyzed(), [.drop]).isEmpty)
+}
+
+@Test func onlyASongsBiggestJumpsCountAsDrops() throws {
+    var song = Song(seconds: 180)
+    for index in 0..<12 {
+        let start = Double(index) * 15
+        let loud = index.isMultiple(of: 2)
+        song.noise(from: start, to: start + 15) { _ in loud ? 0.02 : 0.25 }
+        for hit in 0..<30 { song.kick(at: start + Double(hit) * 0.5, level: loud ? 0.1 : 1) }
+    }
+    let drops = times(try song.analyzed(), [.drop])
+    #expect(!drops.isEmpty)
+    #expect(drops.count <= 4)
+}
+
+@Test func aFadeInIsNotABuild() throws {
+    var song = Song(seconds: 20)
+    song.tone(from: 0, to: 20, hertz: [220, 440]) { time in min(0.4, 0.4 * time * time / 64) }
+    // Only the part with real sound can count, not the rise out of silence.
+    #expect(try song.analyzed().builds?.allSatisfy { $0.rise <= 26 } == true)
+}
+
+@Test func barsSurviveASkippedBeat() throws {
+    var track = groove(bpm: 120, bars: 12)
+    let second = groove(bpm: 120, bars: 12)
+    // A half-second gap moves every later bar by one beat.
+    let gap = [Float](repeating: 0, count: Int(0.5 * rate))
+    let joined = Array(track.song.samples.dropLast(Int(0.5 * rate))) + gap + second.song.samples
+    track.song.samples = joined
+    let offset = track.song.seconds - second.song.seconds
+    let truth = track.downbeats + second.downbeats.map { $0 + offset }
+    #expect(recall(truth, in: times(try track.song.analyzed(), [.downbeat]), within: 0.08) >= 0.8)
+}

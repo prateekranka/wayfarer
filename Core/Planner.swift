@@ -622,7 +622,9 @@ public struct MontagePlanner: MontagePlanning, Sendable {
             var aligned = 0
             for segment in segments {
                 cursor += segment.duration
-                let closest = music.events.map { abs(($0.time) - cursor) }.min() ?? .infinity
+                // Hits between beats are common in real songs, so they do not count.
+                let closest = music.events.filter { $0.kind != .onset && $0.kind != .silence }
+                    .map { abs($0.time - cursor) }.min() ?? .infinity
                 if closest <= 0.16 { aligned += 1 }
             }
             result.beatAlignment = Double(aligned) / Double(segments.count)
