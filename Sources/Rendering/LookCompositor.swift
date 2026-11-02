@@ -115,12 +115,15 @@ final class LookCompositor: NSObject, AVVideoCompositing, @unchecked Sendable {
                 .transformed(by: instruction.transform)
                 .transformed(by: Self.flip(height: size.height))
                 .cropped(to: frameRect)
-            shot = correct(shot, with: instruction.correction)
+            // Core Image can run the LUT after compositing, which tints the
+            // bars even when the graded shot is cropped. Grading a clamped
+            // image and then cropping keeps letterbox bars pure black.
+            let picture = shot.extent
+            shot = correct(shot.clampedToExtent(), with: instruction.correction)
             shot = grade(shot, with: instruction.look)
             shot = addGrain(to: shot, amount: instruction.look.grain,
                             time: request.compositionTime, in: frameRect)
-            // Grade only the picture, so letterbox bars stay pure black.
-            frame = shot.composited(over: frame)
+            frame = shot.cropped(to: picture).composited(over: frame)
         }
 
         frame = addVignette(to: frame, amount: instruction.look.vignette, in: frameRect)
