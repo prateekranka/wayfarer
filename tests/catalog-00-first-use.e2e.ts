@@ -1,0 +1,43 @@
+import { test } from './catalog.ts';
+import { expect } from 'e2e';
+import { tapVisibleControl } from './controls.ts';
+
+test('catalog: first use, empty style sections, import and paused draft', async ({ app, screen, device, capture }) => {
+  // This config pins the new, task-owned QA bundle, never the consumer bundle.
+  await device.installApp(undefined, { reinstall: true });
+  await device.setAppearance('dark');
+  await app.open();
+  await expect(screen.getByText(/Your next reel\s+starts here\./)).toBeVisible();
+  await expect(screen.getByTestId(/^project-card-/)).toHaveCount(0);
+  await capture('01-home-first-use-no-draft');
+  await tapVisibleControl(screen.getByTestId('open-my-style'));
+  await expect(screen.getByText('Your editing style', { exact: true })).toBeVisible();
+  await capture('02-style-preferences-first-use');
+  await tapVisibleControl(screen.getByText('References', { exact: true }));
+  await expect(screen.getByText('Your reference reels will appear here.', { exact: true })).toBeVisible();
+  await capture('03-style-references-empty');
+  await tapVisibleControl(screen.getByText('Compare', { exact: true }));
+  await expect(screen.getByText('Make an edit first', { exact: true })).toBeVisible();
+  await capture('04-style-compare-empty');
+  await tapVisibleControl(screen.getByTestId('close-my-style'));
+  await tapVisibleControl(screen.getByTestId('create-montage'));
+  await expect(screen.getByTestId('sample-12')).toBeVisible();
+  await capture('05-add-clips-sheet');
+  await tapVisibleControl(screen.getByTestId('sample-12'));
+  await expect(screen.getByTestId('processing-title')).toBeVisible({ timeout: 15_000 });
+  await capture('06-preparing-or-analyzing-clips');
+  await expect(screen.getByTestId('processing-title')).toContainText('Analyzing', { timeout: 120_000 });
+  await tapVisibleControl(screen.getByTestId('pause-processing'));
+  await expect(screen.getByTestId('clip-count')).toContainText('12 clips');
+  await expect(screen.getByText('Continue finding moments', { exact: true })).toBeVisible();
+  await expect(screen.getByTestId('make-reel')).not.toBeEnabled();
+  await capture('07-setup-paused-without-song');
+  await app.back();
+  await expect(screen.getByTestId(/^project-card-/)).toHaveCount(1);
+  await expect(screen.getByTestId(/^project-card-/).first()).toContainText('Draft');
+  await capture('08-home-with-draft');
+  await tapVisibleControl(screen.getByTestId(/^project-card-/).first());
+  await expect(screen.getByTestId('clip-count')).toContainText('12 clips', { timeout: 240_000 });
+  await expect(screen.getByTestId('make-reel')).not.toBeEnabled();
+  await capture('09-setup-analysis-complete-without-song');
+});

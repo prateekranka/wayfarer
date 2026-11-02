@@ -1,0 +1,724 @@
+// !$*UTF8*$!
+{
+	archiveVersion = 1;
+	classes = {
+	};
+	objectVersion = 77;
+	objects = {
+
+/* Begin PBXBuildFile section */
+		00D23F9E86337A48CB7F6C09 /* wayfarer-demo-083.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = EB84C2AA2F23EFE307DFEC2D /* wayfarer-demo-083.mp4 */; };
+		02832A52C083F0B4DF03A9F2 /* wayfarer-demo-024.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 3E26DBA760BE8B000CFA967B /* wayfarer-demo-024.mp4 */; };
+		02FCE3B8ED05184584DBD6CC /* wayfarer-demo-016.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 75CF874B4B53777911157503 /* wayfarer-demo-016.mp4 */; };
+		03AB795B475B1402B73E86E7 /* wayfarer-demo-029.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 62F280118B39DC6080A5CB76 /* wayfarer-demo-029.mp4 */; };
+		07BC5D648590DFF0B15909A7 /* wayfarer-demo-069.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = A8EA4EA031920A2CF614DAE5 /* wayfarer-demo-069.mp4 */; };
+		09EAF490394BEBABD236477D /* wayfarer-demo-025.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = F09A1786D6B0A7777979CD98 /* wayfarer-demo-025.mp4 */; };
+		0B4ED0968CF9BCB9572516B7 /* wayfarer-demo-026.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 90CC1E313B464E3D8A7E4EFD /* wayfarer-demo-026.mp4 */; };
+		0D131806872F80306A19083D /* wayfarer-demo-074.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = ED4E2939324AAF2BD1383A0D /* wayfarer-demo-074.mp4 */; };
+		0FB2B4F04DE30EFD52CE2DC8 /* wayfarer-demo-007.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = CA25A8FF4B9ECF13A6FAF9DB /* wayfarer-demo-007.mp4 */; };
+		1422E74B3261DDA57136B1DF /* wayfarer-demo-017.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 36265BF37664E4190DA1E8F5 /* wayfarer-demo-017.mp4 */; };
+		1D26FF97B0DD0CF86D84929C /* wayfarer-demo-039.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = BC104FF9B73543FCF7287AA8 /* wayfarer-demo-039.mp4 */; };
+		21AAA2A754501510DA423C23 /* wayfarer-demo-062.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 755CAAE293830AD0CFC7215D /* wayfarer-demo-062.mp4 */; };
+		22006D348D96DDAD5DAF087F /* wayfarer-demo-064.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 1572DD05AD713CE8100E3A99 /* wayfarer-demo-064.mp4 */; };
+		22513A6738C79D0EAD290435 /* wayfarer-demo-011.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = CF428F9B3F632DDD6C1D81E8 /* wayfarer-demo-011.mp4 */; };
+		24E959CA19AECE733764AFDE /* wayfarer-demo-079.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = EEE9F1305962BD18952624AE /* wayfarer-demo-079.mp4 */; };
+		2E2179ED249806F9AB79536E /* wayfarer-demo-003.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = D98F71BEB7E8D2F9FCFCADC2 /* wayfarer-demo-003.mp4 */; };
+		2E8722DFC93A870438E1D5E1 /* wayfarer-demo-057.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 41D8A4DD765745175F417E0B /* wayfarer-demo-057.mp4 */; };
+		31314D359A358EE0CF011FBC /* wayfarer-demo-077.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = F6AB4A5A9C2D3DA2004F1316 /* wayfarer-demo-077.mp4 */; };
+		3530C111A218340432FB54B6 /* wayfarer-demo-015.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = B9F676AA3E3F82AE106719B9 /* wayfarer-demo-015.mp4 */; };
+		3AF0673562C01D3D7817C907 /* wayfarer-demo-038.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 7F9DC6DBAE239704927C2A57 /* wayfarer-demo-038.mp4 */; };
+		3B6622B990B587B20C478E0C /* wayfarer-demo-004.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 5B1F671606AD30B319157E81 /* wayfarer-demo-004.mp4 */; };
+		3CB57D602DDF8C3094EF73E2 /* wayfarer-demo-078.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 6DCA907A6B08A2D6E004EE39 /* wayfarer-demo-078.mp4 */; };
+		42D82FE9C00D53C256B6AD90 /* wayfarer-demo-013.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 09EA94F94F114D96116044E9 /* wayfarer-demo-013.mp4 */; };
+		454A0E6FC91AE53CFCF73835 /* wayfarer-demo-014.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = E314E25505AF8936FE6BE0A5 /* wayfarer-demo-014.mp4 */; };
+		46996048C3B112FE98D0029E /* wayfarer-demo-008.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = BE299849BD2B303437396E18 /* wayfarer-demo-008.mp4 */; };
+		474A6BAAD9DFFDB6A9690D10 /* wayfarer-demo-059.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = ABBC9C6657DE9B856542B5A4 /* wayfarer-demo-059.mp4 */; };
+		5018D1D1E64F06BB8F84584F /* wayfarer-demo-002.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 4544644B7E37BC8851BAEBFD /* wayfarer-demo-002.mp4 */; };
+		517E591832F7FB6C095FA96B /* wayfarer-demo-081.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 92BEE925B81B51040FF19950 /* wayfarer-demo-081.mp4 */; };
+		5D8E0FF0AEADBF92DAB5D343 /* wayfarer-demo-067.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = E300C9A7884F8D767D6515F4 /* wayfarer-demo-067.mp4 */; };
+		5E928BCA44F31CDBB4AAC85A /* wayfarer-demo-036.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = E09ECBAA6F081756738480C9 /* wayfarer-demo-036.mp4 */; };
+		614D6A6D5126EA288517686D /* wayfarer-demo-031.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 26D60E036B1D911417B856CA /* wayfarer-demo-031.mp4 */; };
+		637F4F6EDDA31B9872DF4F8F /* MontageCore in Frameworks */ = {isa = PBXBuildFile; productRef = CD4EBBCBCDED3C5508473CD2 /* MontageCore */; };
+		692FCF831D38BC96E1736E0D /* Assets.xcassets in Resources */ = {isa = PBXBuildFile; fileRef = 74C5D066C41CBE02AEDCA944 /* Assets.xcassets */; };
+		6C6FD2CCAF42419C4123ED36 /* wayfarer-demo-068.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 2CF7C1A1C113A730FCE4065C /* wayfarer-demo-068.mp4 */; };
+		6F623DEA9AF6F10F3F33EC16 /* wayfarer-demo-023.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 5E86D122AE7C638542571C84 /* wayfarer-demo-023.mp4 */; };
+		883B9F22A52698820EB5836E /* wayfarer-demo-061.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = F1B975792BDAAD1141F09D17 /* wayfarer-demo-061.mp4 */; };
+		8A083B73436D280FC2E2C8C8 /* wayfarer-demo-056.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 414C8CC8C5274C0616E3F3AF /* wayfarer-demo-056.mp4 */; };
+		9009E2EC26F3CB7F1118666C /* wayfarer-demo-018.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 4A18810DCBBBCCC4782CA4D9 /* wayfarer-demo-018.mp4 */; };
+		910FB23AA9C3B0E37B25C3C4 /* wayfarer-demo-048.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 89C07691A00835113AE20059 /* wayfarer-demo-048.mp4 */; };
+		931CF9A13499EB90F87D28AA /* wayfarer-demo-020.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = CC3BF13356CA4DBE052B3030 /* wayfarer-demo-020.mp4 */; };
+		9FF39970CD9647B6677DB182 /* wayfarer-demo-027.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = B737E2ED2404486F22217131 /* wayfarer-demo-027.mp4 */; };
+		A201E7B74FA47502C78A0B3D /* wayfarer-demo-033.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = E596823D2D9009563C6F370A /* wayfarer-demo-033.mp4 */; };
+		A206ACD1A23F8AA3A30D4A14 /* wayfarer-demo-043.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 265EAC3342697C99CC3547D6 /* wayfarer-demo-043.mp4 */; };
+		A2F39C17C875C455FBD5B934 /* wayfarer-demo-010.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 3B39D88C587F11998F3C6F13 /* wayfarer-demo-010.mp4 */; };
+		A32892EC46AC197D34A9E69B /* wayfarer-demo-066.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 474C7AE2B278FCCA99520A27 /* wayfarer-demo-066.mp4 */; };
+		A388EDB890A2F876B232EFDC /* PrivacyInfo.xcprivacy in Resources */ = {isa = PBXBuildFile; fileRef = 34599D12C0959E69985C2402 /* PrivacyInfo.xcprivacy */; };
+		A39FF978AFA1AB4702DC3E5A /* wayfarer-demo-075.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = DC6D0EC6FC1FD65F87744336 /* wayfarer-demo-075.mp4 */; };
+		A4149B83EDD8B861165B91D0 /* wayfarer-demo-006.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 2DE98D6D8945DA21CC4A42BD /* wayfarer-demo-006.mp4 */; };
+		A55E5F10E30A1899B661425D /* wayfarer-demo-041.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 00CFFF5F1892BB5A87E62A1B /* wayfarer-demo-041.mp4 */; };
+		AECE19F545B40D1DC26F1A7B /* wayfarer-demo-054.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 702498CB3D06063A44E596CA /* wayfarer-demo-054.mp4 */; };
+		B12F6850EFBCD2803FADD9B3 /* wayfarer-demo-058.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = F9CE258B326CA7B7E559DD52 /* wayfarer-demo-058.mp4 */; };
+		B4E975D4A1E20F15E907B057 /* wayfarer-demo-050.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 0EB44BCCAC39914EEFD3C576 /* wayfarer-demo-050.mp4 */; };
+		B6E538BEC6C590CF20757E42 /* wayfarer-demo-063.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 871B6452DF876590C151EFAA /* wayfarer-demo-063.mp4 */; };
+		B7C1D4330F500B6CB403AE49 /* wayfarer-demo-082.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 66B26370A72E258501C504DF /* wayfarer-demo-082.mp4 */; };
+		B84A6EBEF11423E8CCEFC889 /* wayfarer-demo-072.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 47CF3766974AB7BC54BEDA5F /* wayfarer-demo-072.mp4 */; };
+		B8BC0847D11F73B8AD804EAF /* wayfarer-demo-042.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 2B81C2761344006678A65050 /* wayfarer-demo-042.mp4 */; };
+		C66E3EE899BE9642687DA0FC /* wayfarer-demo-009.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 3D4051D0B433809BA628F281 /* wayfarer-demo-009.mp4 */; };
+		C69569495B32BD808A5F2470 /* wayfarer-demo-045.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 5DF24F602C52BC3DF8EAA974 /* wayfarer-demo-045.mp4 */; };
+		C8231846F3F770C7E6C37807 /* wayfarer-demo-055.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 716AEAE4DCF31A88311C9D27 /* wayfarer-demo-055.mp4 */; };
+		CB1386EE0FC79C435FF53410 /* wayfarer-demo-040.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 3DE25F026FAAB78F903ADF1D /* wayfarer-demo-040.mp4 */; };
+		D3C862E3C678640F7EA4115C /* wayfarer-demo-035.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 4CC6966ABB717D363E9532ED /* wayfarer-demo-035.mp4 */; };
+		D3FEAA4F8DE76365EAD1D69F /* wayfarer-demo-030.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 390C268B711DE78CC2FCE394 /* wayfarer-demo-030.mp4 */; };
+		D57373C58C1E2445CECCF18E /* wayfarer-demo-076.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 3EB65B0C822EFCEE32A406CD /* wayfarer-demo-076.mp4 */; };
+		D5ECF0DA088D185481B212C2 /* wayfarer-demo-065.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 2FBCFF241A22C1679A22FD74 /* wayfarer-demo-065.mp4 */; };
+		D678D81583CCFA6302D1EAEC /* wayfarer-demo-021.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = DCA2839CB1572BDFBCBBB9E1 /* wayfarer-demo-021.mp4 */; };
+		DA365805105707EFD3DC1AF2 /* wayfarer-demo-052.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 975A2091C1E2F63EC7B0F9E6 /* wayfarer-demo-052.mp4 */; };
+		DC2E94FF8031708FF5052A8A /* wayfarer-demo-037.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 6FCEF94B604F2A2AAB842577 /* wayfarer-demo-037.mp4 */; };
+		DCCB07239C864C80BF9D07C9 /* wayfarer-demo-044.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = A80E6382C1500DF80102BA35 /* wayfarer-demo-044.mp4 */; };
+		E303CBBCF2CA6D480264EC64 /* wayfarer-demo-028.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = F3846F6B887E1E419EF6CD42 /* wayfarer-demo-028.mp4 */; };
+		E388E4D5C91ED4B1860C4CD7 /* wayfarer-demo-085.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 0D736596A1178EAAF46A17FF /* wayfarer-demo-085.mp4 */; };
+		EC30C5A5623306616A0890F1 /* wayfarer-demo-049.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = B9B59AAD10D1080D59093BB6 /* wayfarer-demo-049.mp4 */; };
+		ED69DFC7A6C26EA39B49B4CE /* wayfarer-demo-001.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = F635FFBCE0800212C4A3F81A /* wayfarer-demo-001.mp4 */; };
+		EDE738C6668AFB8FF9A24179 /* wayfarer-demo-060.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 5B3E0E9038B9D48EFF49DB09 /* wayfarer-demo-060.mp4 */; };
+		F1F1776C0B33907758D70048 /* wayfarer-demo-073.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 17ED1516C646519DE5238D60 /* wayfarer-demo-073.mp4 */; };
+		F3F1676BD0A5B00B164319BE /* wayfarer-demo-022.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = E8E34D8A9F68E495018D969D /* wayfarer-demo-022.mp4 */; };
+		F5411C86B6257E3670CA388B /* wayfarer-demo-051.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = B0B26FDD7378B8151F125FD0 /* wayfarer-demo-051.mp4 */; };
+		F6E8236A9DB5271976ECD20E /* wayfarer-demo-034.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = EBB335AF5C8BE4E0A9D91FD4 /* wayfarer-demo-034.mp4 */; };
+		F89E4B3D2887F2C0C8896C13 /* wayfarer-demo-019.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = B80556A249AE81436D85B61C /* wayfarer-demo-019.mp4 */; };
+		F8D1AB32928F9A380D6F54DB /* wayfarer-demo-084.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 070972197571891C62FC9AF2 /* wayfarer-demo-084.mp4 */; };
+		F8EFD83328CD192DE5CB22DB /* wayfarer-demo-080.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 36FAC7B97430937B234316C9 /* wayfarer-demo-080.mp4 */; };
+		FAC76299BA48F034BA7A2307 /* wayfarer-demo-053.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 4845F4777F545D6232D5505F /* wayfarer-demo-053.mp4 */; };
+		FB733ED21CC969878B5170FF /* wayfarer-demo-005.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 2DA2C01464B84B18BC2C6E68 /* wayfarer-demo-005.mp4 */; };
+		FBA7DF024BE5F775B0FCB76D /* wayfarer-demo-032.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 9C006373A9E8D55AA8E82FA0 /* wayfarer-demo-032.mp4 */; };
+		FD4F0E44BE97E2FD08851976 /* wayfarer-demo-047.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 72AFEE47414E57A7A0AD3E96 /* wayfarer-demo-047.mp4 */; };
+		FE937647415419E1139A2494 /* wayfarer-demo-012.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = AEF738134D527F9CA5871C7C /* wayfarer-demo-012.mp4 */; };
+		FEB80DB359BD988405FA6B57 /* wayfarer-demo-046.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = FE954A010B81BDD7C596D940 /* wayfarer-demo-046.mp4 */; };
+		FEDCEEA89DB94398BA0CEA80 /* wayfarer-demo-071.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 4E35B3F114CCE7DA12B2B87C /* wayfarer-demo-071.mp4 */; };
+		FF46E8E1B06624020D2496D0 /* wayfarer-demo-070.mp4 in Resources */ = {isa = PBXBuildFile; fileRef = 93611EE3661226FC543C9430 /* wayfarer-demo-070.mp4 */; };
+/* End PBXBuildFile section */
+
+/* Begin PBXFileReference section */
+		00CFFF5F1892BB5A87E62A1B /* wayfarer-demo-041.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-041.mp4"; sourceTree = "<group>"; };
+		070972197571891C62FC9AF2 /* wayfarer-demo-084.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-084.mp4"; sourceTree = "<group>"; };
+		09EA94F94F114D96116044E9 /* wayfarer-demo-013.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-013.mp4"; sourceTree = "<group>"; };
+		0D736596A1178EAAF46A17FF /* wayfarer-demo-085.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-085.mp4"; sourceTree = "<group>"; };
+		0EB44BCCAC39914EEFD3C576 /* wayfarer-demo-050.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-050.mp4"; sourceTree = "<group>"; };
+		1572DD05AD713CE8100E3A99 /* wayfarer-demo-064.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-064.mp4"; sourceTree = "<group>"; };
+		17ED1516C646519DE5238D60 /* wayfarer-demo-073.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-073.mp4"; sourceTree = "<group>"; };
+		1CFE868315602B4CC12612CA /* Wayfarer.app */ = {isa = PBXFileReference; includeInIndex = 0; lastKnownFileType = wrapper.application; path = Wayfarer.app; sourceTree = BUILT_PRODUCTS_DIR; };
+		265EAC3342697C99CC3547D6 /* wayfarer-demo-043.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-043.mp4"; sourceTree = "<group>"; };
+		26D60E036B1D911417B856CA /* wayfarer-demo-031.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-031.mp4"; sourceTree = "<group>"; };
+		2B81C2761344006678A65050 /* wayfarer-demo-042.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-042.mp4"; sourceTree = "<group>"; };
+		2CF7C1A1C113A730FCE4065C /* wayfarer-demo-068.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-068.mp4"; sourceTree = "<group>"; };
+		2DA2C01464B84B18BC2C6E68 /* wayfarer-demo-005.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-005.mp4"; sourceTree = "<group>"; };
+		2DE98D6D8945DA21CC4A42BD /* wayfarer-demo-006.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-006.mp4"; sourceTree = "<group>"; };
+		2F75943F7AF8997183F4BAFD /* editor */ = {isa = PBXFileReference; lastKnownFileType = folder; name = editor; path = .; sourceTree = SOURCE_ROOT; };
+		2FBCFF241A22C1679A22FD74 /* wayfarer-demo-065.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-065.mp4"; sourceTree = "<group>"; };
+		34599D12C0959E69985C2402 /* PrivacyInfo.xcprivacy */ = {isa = PBXFileReference; path = PrivacyInfo.xcprivacy; sourceTree = "<group>"; };
+		36265BF37664E4190DA1E8F5 /* wayfarer-demo-017.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-017.mp4"; sourceTree = "<group>"; };
+		36FAC7B97430937B234316C9 /* wayfarer-demo-080.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-080.mp4"; sourceTree = "<group>"; };
+		390C268B711DE78CC2FCE394 /* wayfarer-demo-030.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-030.mp4"; sourceTree = "<group>"; };
+		3B39D88C587F11998F3C6F13 /* wayfarer-demo-010.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-010.mp4"; sourceTree = "<group>"; };
+		3D4051D0B433809BA628F281 /* wayfarer-demo-009.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-009.mp4"; sourceTree = "<group>"; };
+		3DE25F026FAAB78F903ADF1D /* wayfarer-demo-040.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-040.mp4"; sourceTree = "<group>"; };
+		3E26DBA760BE8B000CFA967B /* wayfarer-demo-024.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-024.mp4"; sourceTree = "<group>"; };
+		3EB65B0C822EFCEE32A406CD /* wayfarer-demo-076.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-076.mp4"; sourceTree = "<group>"; };
+		414C8CC8C5274C0616E3F3AF /* wayfarer-demo-056.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-056.mp4"; sourceTree = "<group>"; };
+		41D8A4DD765745175F417E0B /* wayfarer-demo-057.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-057.mp4"; sourceTree = "<group>"; };
+		4544644B7E37BC8851BAEBFD /* wayfarer-demo-002.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-002.mp4"; sourceTree = "<group>"; };
+		474C7AE2B278FCCA99520A27 /* wayfarer-demo-066.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-066.mp4"; sourceTree = "<group>"; };
+		47CF3766974AB7BC54BEDA5F /* wayfarer-demo-072.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-072.mp4"; sourceTree = "<group>"; };
+		4845F4777F545D6232D5505F /* wayfarer-demo-053.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-053.mp4"; sourceTree = "<group>"; };
+		4A18810DCBBBCCC4782CA4D9 /* wayfarer-demo-018.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-018.mp4"; sourceTree = "<group>"; };
+		4CC6966ABB717D363E9532ED /* wayfarer-demo-035.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-035.mp4"; sourceTree = "<group>"; };
+		4E35B3F114CCE7DA12B2B87C /* wayfarer-demo-071.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-071.mp4"; sourceTree = "<group>"; };
+		5B1F671606AD30B319157E81 /* wayfarer-demo-004.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-004.mp4"; sourceTree = "<group>"; };
+		5B3E0E9038B9D48EFF49DB09 /* wayfarer-demo-060.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-060.mp4"; sourceTree = "<group>"; };
+		5DF24F602C52BC3DF8EAA974 /* wayfarer-demo-045.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-045.mp4"; sourceTree = "<group>"; };
+		5E86D122AE7C638542571C84 /* wayfarer-demo-023.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-023.mp4"; sourceTree = "<group>"; };
+		62F280118B39DC6080A5CB76 /* wayfarer-demo-029.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-029.mp4"; sourceTree = "<group>"; };
+		66B26370A72E258501C504DF /* wayfarer-demo-082.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-082.mp4"; sourceTree = "<group>"; };
+		6DCA907A6B08A2D6E004EE39 /* wayfarer-demo-078.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-078.mp4"; sourceTree = "<group>"; };
+		6FCEF94B604F2A2AAB842577 /* wayfarer-demo-037.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-037.mp4"; sourceTree = "<group>"; };
+		702498CB3D06063A44E596CA /* wayfarer-demo-054.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-054.mp4"; sourceTree = "<group>"; };
+		716AEAE4DCF31A88311C9D27 /* wayfarer-demo-055.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-055.mp4"; sourceTree = "<group>"; };
+		72AFEE47414E57A7A0AD3E96 /* wayfarer-demo-047.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-047.mp4"; sourceTree = "<group>"; };
+		74C5D066C41CBE02AEDCA944 /* Assets.xcassets */ = {isa = PBXFileReference; lastKnownFileType = folder.assetcatalog; path = Assets.xcassets; sourceTree = "<group>"; };
+		755CAAE293830AD0CFC7215D /* wayfarer-demo-062.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-062.mp4"; sourceTree = "<group>"; };
+		75CF874B4B53777911157503 /* wayfarer-demo-016.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-016.mp4"; sourceTree = "<group>"; };
+		7F9DC6DBAE239704927C2A57 /* wayfarer-demo-038.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-038.mp4"; sourceTree = "<group>"; };
+		871B6452DF876590C151EFAA /* wayfarer-demo-063.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-063.mp4"; sourceTree = "<group>"; };
+		89C07691A00835113AE20059 /* wayfarer-demo-048.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-048.mp4"; sourceTree = "<group>"; };
+		90CC1E313B464E3D8A7E4EFD /* wayfarer-demo-026.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-026.mp4"; sourceTree = "<group>"; };
+		92BEE925B81B51040FF19950 /* wayfarer-demo-081.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-081.mp4"; sourceTree = "<group>"; };
+		93611EE3661226FC543C9430 /* wayfarer-demo-070.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-070.mp4"; sourceTree = "<group>"; };
+		975A2091C1E2F63EC7B0F9E6 /* wayfarer-demo-052.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-052.mp4"; sourceTree = "<group>"; };
+		9C006373A9E8D55AA8E82FA0 /* wayfarer-demo-032.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-032.mp4"; sourceTree = "<group>"; };
+		A80E6382C1500DF80102BA35 /* wayfarer-demo-044.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-044.mp4"; sourceTree = "<group>"; };
+		A8EA4EA031920A2CF614DAE5 /* wayfarer-demo-069.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-069.mp4"; sourceTree = "<group>"; };
+		ABBC9C6657DE9B856542B5A4 /* wayfarer-demo-059.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-059.mp4"; sourceTree = "<group>"; };
+		AEF738134D527F9CA5871C7C /* wayfarer-demo-012.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-012.mp4"; sourceTree = "<group>"; };
+		B0B26FDD7378B8151F125FD0 /* wayfarer-demo-051.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-051.mp4"; sourceTree = "<group>"; };
+		B737E2ED2404486F22217131 /* wayfarer-demo-027.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-027.mp4"; sourceTree = "<group>"; };
+		B80556A249AE81436D85B61C /* wayfarer-demo-019.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-019.mp4"; sourceTree = "<group>"; };
+		B9B59AAD10D1080D59093BB6 /* wayfarer-demo-049.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-049.mp4"; sourceTree = "<group>"; };
+		B9F676AA3E3F82AE106719B9 /* wayfarer-demo-015.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-015.mp4"; sourceTree = "<group>"; };
+		BC104FF9B73543FCF7287AA8 /* wayfarer-demo-039.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-039.mp4"; sourceTree = "<group>"; };
+		BE299849BD2B303437396E18 /* wayfarer-demo-008.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-008.mp4"; sourceTree = "<group>"; };
+		CA25A8FF4B9ECF13A6FAF9DB /* wayfarer-demo-007.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-007.mp4"; sourceTree = "<group>"; };
+		CC3BF13356CA4DBE052B3030 /* wayfarer-demo-020.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-020.mp4"; sourceTree = "<group>"; };
+		CF428F9B3F632DDD6C1D81E8 /* wayfarer-demo-011.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-011.mp4"; sourceTree = "<group>"; };
+		D98F71BEB7E8D2F9FCFCADC2 /* wayfarer-demo-003.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-003.mp4"; sourceTree = "<group>"; };
+		DC6D0EC6FC1FD65F87744336 /* wayfarer-demo-075.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-075.mp4"; sourceTree = "<group>"; };
+		DCA2839CB1572BDFBCBBB9E1 /* wayfarer-demo-021.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-021.mp4"; sourceTree = "<group>"; };
+		E09ECBAA6F081756738480C9 /* wayfarer-demo-036.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-036.mp4"; sourceTree = "<group>"; };
+		E300C9A7884F8D767D6515F4 /* wayfarer-demo-067.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-067.mp4"; sourceTree = "<group>"; };
+		E314E25505AF8936FE6BE0A5 /* wayfarer-demo-014.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-014.mp4"; sourceTree = "<group>"; };
+		E596823D2D9009563C6F370A /* wayfarer-demo-033.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-033.mp4"; sourceTree = "<group>"; };
+		E8E34D8A9F68E495018D969D /* wayfarer-demo-022.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-022.mp4"; sourceTree = "<group>"; };
+		EB84C2AA2F23EFE307DFEC2D /* wayfarer-demo-083.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-083.mp4"; sourceTree = "<group>"; };
+		EBB335AF5C8BE4E0A9D91FD4 /* wayfarer-demo-034.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-034.mp4"; sourceTree = "<group>"; };
+		ED4E2939324AAF2BD1383A0D /* wayfarer-demo-074.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-074.mp4"; sourceTree = "<group>"; };
+		EEE9F1305962BD18952624AE /* wayfarer-demo-079.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-079.mp4"; sourceTree = "<group>"; };
+		F09A1786D6B0A7777979CD98 /* wayfarer-demo-025.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-025.mp4"; sourceTree = "<group>"; };
+		F1B975792BDAAD1141F09D17 /* wayfarer-demo-061.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-061.mp4"; sourceTree = "<group>"; };
+		F3846F6B887E1E419EF6CD42 /* wayfarer-demo-028.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-028.mp4"; sourceTree = "<group>"; };
+		F635FFBCE0800212C4A3F81A /* wayfarer-demo-001.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-001.mp4"; sourceTree = "<group>"; };
+		F6AB4A5A9C2D3DA2004F1316 /* wayfarer-demo-077.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-077.mp4"; sourceTree = "<group>"; };
+		F9CE258B326CA7B7E559DD52 /* wayfarer-demo-058.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-058.mp4"; sourceTree = "<group>"; };
+		FE954A010B81BDD7C596D940 /* wayfarer-demo-046.mp4 */ = {isa = PBXFileReference; path = "wayfarer-demo-046.mp4"; sourceTree = "<group>"; };
+/* End PBXFileReference section */
+
+/* Begin PBXFileSystemSynchronizedRootGroup section */
+		C155158E0321A9ED80020A45 /* Sources */ = {
+			isa = PBXFileSystemSynchronizedRootGroup;
+			explicitFileTypes = {
+			};
+			explicitFolders = (
+			);
+			path = Sources;
+			sourceTree = "<group>";
+		};
+/* End PBXFileSystemSynchronizedRootGroup section */
+
+/* Begin PBXFrameworksBuildPhase section */
+		F59242863C75537DE0203F14 /* Frameworks */ = {
+			isa = PBXFrameworksBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				637F4F6EDDA31B9872DF4F8F /* MontageCore in Frameworks */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXFrameworksBuildPhase section */
+
+/* Begin PBXGroup section */
+		39CBEAE1B900123C1EE59422 /* Products */ = {
+			isa = PBXGroup;
+			children = (
+				1CFE868315602B4CC12612CA /* Wayfarer.app */,
+			);
+			name = Products;
+			sourceTree = "<group>";
+		};
+		4CD0A553EBAC411B0D59E7A6 /* SampleTrip */ = {
+			isa = PBXGroup;
+			children = (
+				F635FFBCE0800212C4A3F81A /* wayfarer-demo-001.mp4 */,
+				4544644B7E37BC8851BAEBFD /* wayfarer-demo-002.mp4 */,
+				D98F71BEB7E8D2F9FCFCADC2 /* wayfarer-demo-003.mp4 */,
+				5B1F671606AD30B319157E81 /* wayfarer-demo-004.mp4 */,
+				2DA2C01464B84B18BC2C6E68 /* wayfarer-demo-005.mp4 */,
+				2DE98D6D8945DA21CC4A42BD /* wayfarer-demo-006.mp4 */,
+				CA25A8FF4B9ECF13A6FAF9DB /* wayfarer-demo-007.mp4 */,
+				BE299849BD2B303437396E18 /* wayfarer-demo-008.mp4 */,
+				3D4051D0B433809BA628F281 /* wayfarer-demo-009.mp4 */,
+				3B39D88C587F11998F3C6F13 /* wayfarer-demo-010.mp4 */,
+				CF428F9B3F632DDD6C1D81E8 /* wayfarer-demo-011.mp4 */,
+				AEF738134D527F9CA5871C7C /* wayfarer-demo-012.mp4 */,
+				09EA94F94F114D96116044E9 /* wayfarer-demo-013.mp4 */,
+				E314E25505AF8936FE6BE0A5 /* wayfarer-demo-014.mp4 */,
+				B9F676AA3E3F82AE106719B9 /* wayfarer-demo-015.mp4 */,
+				75CF874B4B53777911157503 /* wayfarer-demo-016.mp4 */,
+				36265BF37664E4190DA1E8F5 /* wayfarer-demo-017.mp4 */,
+				4A18810DCBBBCCC4782CA4D9 /* wayfarer-demo-018.mp4 */,
+				B80556A249AE81436D85B61C /* wayfarer-demo-019.mp4 */,
+				CC3BF13356CA4DBE052B3030 /* wayfarer-demo-020.mp4 */,
+				DCA2839CB1572BDFBCBBB9E1 /* wayfarer-demo-021.mp4 */,
+				E8E34D8A9F68E495018D969D /* wayfarer-demo-022.mp4 */,
+				5E86D122AE7C638542571C84 /* wayfarer-demo-023.mp4 */,
+				3E26DBA760BE8B000CFA967B /* wayfarer-demo-024.mp4 */,
+				F09A1786D6B0A7777979CD98 /* wayfarer-demo-025.mp4 */,
+				90CC1E313B464E3D8A7E4EFD /* wayfarer-demo-026.mp4 */,
+				B737E2ED2404486F22217131 /* wayfarer-demo-027.mp4 */,
+				F3846F6B887E1E419EF6CD42 /* wayfarer-demo-028.mp4 */,
+				62F280118B39DC6080A5CB76 /* wayfarer-demo-029.mp4 */,
+				390C268B711DE78CC2FCE394 /* wayfarer-demo-030.mp4 */,
+				26D60E036B1D911417B856CA /* wayfarer-demo-031.mp4 */,
+				9C006373A9E8D55AA8E82FA0 /* wayfarer-demo-032.mp4 */,
+				E596823D2D9009563C6F370A /* wayfarer-demo-033.mp4 */,
+				EBB335AF5C8BE4E0A9D91FD4 /* wayfarer-demo-034.mp4 */,
+				4CC6966ABB717D363E9532ED /* wayfarer-demo-035.mp4 */,
+				E09ECBAA6F081756738480C9 /* wayfarer-demo-036.mp4 */,
+				6FCEF94B604F2A2AAB842577 /* wayfarer-demo-037.mp4 */,
+				7F9DC6DBAE239704927C2A57 /* wayfarer-demo-038.mp4 */,
+				BC104FF9B73543FCF7287AA8 /* wayfarer-demo-039.mp4 */,
+				3DE25F026FAAB78F903ADF1D /* wayfarer-demo-040.mp4 */,
+				00CFFF5F1892BB5A87E62A1B /* wayfarer-demo-041.mp4 */,
+				2B81C2761344006678A65050 /* wayfarer-demo-042.mp4 */,
+				265EAC3342697C99CC3547D6 /* wayfarer-demo-043.mp4 */,
+				A80E6382C1500DF80102BA35 /* wayfarer-demo-044.mp4 */,
+				5DF24F602C52BC3DF8EAA974 /* wayfarer-demo-045.mp4 */,
+				FE954A010B81BDD7C596D940 /* wayfarer-demo-046.mp4 */,
+				72AFEE47414E57A7A0AD3E96 /* wayfarer-demo-047.mp4 */,
+				89C07691A00835113AE20059 /* wayfarer-demo-048.mp4 */,
+				B9B59AAD10D1080D59093BB6 /* wayfarer-demo-049.mp4 */,
+				0EB44BCCAC39914EEFD3C576 /* wayfarer-demo-050.mp4 */,
+				B0B26FDD7378B8151F125FD0 /* wayfarer-demo-051.mp4 */,
+				975A2091C1E2F63EC7B0F9E6 /* wayfarer-demo-052.mp4 */,
+				4845F4777F545D6232D5505F /* wayfarer-demo-053.mp4 */,
+				702498CB3D06063A44E596CA /* wayfarer-demo-054.mp4 */,
+				716AEAE4DCF31A88311C9D27 /* wayfarer-demo-055.mp4 */,
+				414C8CC8C5274C0616E3F3AF /* wayfarer-demo-056.mp4 */,
+				41D8A4DD765745175F417E0B /* wayfarer-demo-057.mp4 */,
+				F9CE258B326CA7B7E559DD52 /* wayfarer-demo-058.mp4 */,
+				ABBC9C6657DE9B856542B5A4 /* wayfarer-demo-059.mp4 */,
+				5B3E0E9038B9D48EFF49DB09 /* wayfarer-demo-060.mp4 */,
+				F1B975792BDAAD1141F09D17 /* wayfarer-demo-061.mp4 */,
+				755CAAE293830AD0CFC7215D /* wayfarer-demo-062.mp4 */,
+				871B6452DF876590C151EFAA /* wayfarer-demo-063.mp4 */,
+				1572DD05AD713CE8100E3A99 /* wayfarer-demo-064.mp4 */,
+				2FBCFF241A22C1679A22FD74 /* wayfarer-demo-065.mp4 */,
+				474C7AE2B278FCCA99520A27 /* wayfarer-demo-066.mp4 */,
+				E300C9A7884F8D767D6515F4 /* wayfarer-demo-067.mp4 */,
+				2CF7C1A1C113A730FCE4065C /* wayfarer-demo-068.mp4 */,
+				A8EA4EA031920A2CF614DAE5 /* wayfarer-demo-069.mp4 */,
+				93611EE3661226FC543C9430 /* wayfarer-demo-070.mp4 */,
+				4E35B3F114CCE7DA12B2B87C /* wayfarer-demo-071.mp4 */,
+				47CF3766974AB7BC54BEDA5F /* wayfarer-demo-072.mp4 */,
+				17ED1516C646519DE5238D60 /* wayfarer-demo-073.mp4 */,
+				ED4E2939324AAF2BD1383A0D /* wayfarer-demo-074.mp4 */,
+				DC6D0EC6FC1FD65F87744336 /* wayfarer-demo-075.mp4 */,
+				3EB65B0C822EFCEE32A406CD /* wayfarer-demo-076.mp4 */,
+				F6AB4A5A9C2D3DA2004F1316 /* wayfarer-demo-077.mp4 */,
+				6DCA907A6B08A2D6E004EE39 /* wayfarer-demo-078.mp4 */,
+				EEE9F1305962BD18952624AE /* wayfarer-demo-079.mp4 */,
+				36FAC7B97430937B234316C9 /* wayfarer-demo-080.mp4 */,
+				92BEE925B81B51040FF19950 /* wayfarer-demo-081.mp4 */,
+				66B26370A72E258501C504DF /* wayfarer-demo-082.mp4 */,
+				EB84C2AA2F23EFE307DFEC2D /* wayfarer-demo-083.mp4 */,
+				070972197571891C62FC9AF2 /* wayfarer-demo-084.mp4 */,
+				0D736596A1178EAAF46A17FF /* wayfarer-demo-085.mp4 */,
+			);
+			path = SampleTrip;
+			sourceTree = "<group>";
+		};
+		A59AA018DB24D6CF69A71DD1 /* Packages */ = {
+			isa = PBXGroup;
+			children = (
+				2F75943F7AF8997183F4BAFD /* editor */,
+			);
+			name = Packages;
+			sourceTree = "<group>";
+		};
+		B9C6F3CEB894C2C41D83A75D /* Resources */ = {
+			isa = PBXGroup;
+			children = (
+				74C5D066C41CBE02AEDCA944 /* Assets.xcassets */,
+				34599D12C0959E69985C2402 /* PrivacyInfo.xcprivacy */,
+				4CD0A553EBAC411B0D59E7A6 /* SampleTrip */,
+			);
+			path = Resources;
+			sourceTree = "<group>";
+		};
+		C26539D22D28023F7EFE2924 = {
+			isa = PBXGroup;
+			children = (
+				A59AA018DB24D6CF69A71DD1 /* Packages */,
+				B9C6F3CEB894C2C41D83A75D /* Resources */,
+				C155158E0321A9ED80020A45 /* Sources */,
+				39CBEAE1B900123C1EE59422 /* Products */,
+			);
+			sourceTree = "<group>";
+		};
+/* End PBXGroup section */
+
+/* Begin PBXNativeTarget section */
+		5F8E1756646A365B7E1884B8 /* Wayfarer */ = {
+			isa = PBXNativeTarget;
+			buildConfigurationList = FF598384483FD30BCE1F976E /* Build configuration list for PBXNativeTarget "Wayfarer" */;
+			buildPhases = (
+				2C4C43B912089102EFFA0B44 /* Sources */,
+				6E3A3147B844960A99E03021 /* Resources */,
+				F59242863C75537DE0203F14 /* Frameworks */,
+			);
+			buildRules = (
+			);
+			dependencies = (
+			);
+			fileSystemSynchronizedGroups = (
+				C155158E0321A9ED80020A45 /* Sources */,
+			);
+			name = Wayfarer;
+			packageProductDependencies = (
+				CD4EBBCBCDED3C5508473CD2 /* MontageCore */,
+			);
+			productName = Wayfarer;
+			productReference = 1CFE868315602B4CC12612CA /* Wayfarer.app */;
+			productType = "com.apple.product-type.application";
+		};
+/* End PBXNativeTarget section */
+
+/* Begin PBXProject section */
+		ED7EA0BE03C909ED88ED43A5 /* Project object */ = {
+			isa = PBXProject;
+			attributes = {
+				BuildIndependentTargetsInParallel = YES;
+				LastUpgradeCheck = 1430;
+				TargetAttributes = {
+				};
+			};
+			buildConfigurationList = 957B5156D63469554905CE57 /* Build configuration list for PBXProject "Wayfarer" */;
+			developmentRegion = en;
+			hasScannedForEncodings = 0;
+			knownRegions = (
+				Base,
+				en,
+			);
+			mainGroup = C26539D22D28023F7EFE2924;
+			minimizedProjectReferenceProxies = 1;
+			packageReferences = (
+				66A2609297A62B8C73C04E17 /* XCLocalSwiftPackageReference "." */,
+			);
+			preferredProjectObjectVersion = 77;
+			productRefGroup = 39CBEAE1B900123C1EE59422 /* Products */;
+			projectDirPath = "";
+			projectRoot = "";
+			targets = (
+				5F8E1756646A365B7E1884B8 /* Wayfarer */,
+			);
+		};
+/* End PBXProject section */
+
+/* Begin PBXResourcesBuildPhase section */
+		6E3A3147B844960A99E03021 /* Resources */ = {
+			isa = PBXResourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+				692FCF831D38BC96E1736E0D /* Assets.xcassets in Resources */,
+				A388EDB890A2F876B232EFDC /* PrivacyInfo.xcprivacy in Resources */,
+				ED69DFC7A6C26EA39B49B4CE /* wayfarer-demo-001.mp4 in Resources */,
+				5018D1D1E64F06BB8F84584F /* wayfarer-demo-002.mp4 in Resources */,
+				2E2179ED249806F9AB79536E /* wayfarer-demo-003.mp4 in Resources */,
+				3B6622B990B587B20C478E0C /* wayfarer-demo-004.mp4 in Resources */,
+				FB733ED21CC969878B5170FF /* wayfarer-demo-005.mp4 in Resources */,
+				A4149B83EDD8B861165B91D0 /* wayfarer-demo-006.mp4 in Resources */,
+				0FB2B4F04DE30EFD52CE2DC8 /* wayfarer-demo-007.mp4 in Resources */,
+				46996048C3B112FE98D0029E /* wayfarer-demo-008.mp4 in Resources */,
+				C66E3EE899BE9642687DA0FC /* wayfarer-demo-009.mp4 in Resources */,
+				A2F39C17C875C455FBD5B934 /* wayfarer-demo-010.mp4 in Resources */,
+				22513A6738C79D0EAD290435 /* wayfarer-demo-011.mp4 in Resources */,
+				FE937647415419E1139A2494 /* wayfarer-demo-012.mp4 in Resources */,
+				42D82FE9C00D53C256B6AD90 /* wayfarer-demo-013.mp4 in Resources */,
+				454A0E6FC91AE53CFCF73835 /* wayfarer-demo-014.mp4 in Resources */,
+				3530C111A218340432FB54B6 /* wayfarer-demo-015.mp4 in Resources */,
+				02FCE3B8ED05184584DBD6CC /* wayfarer-demo-016.mp4 in Resources */,
+				1422E74B3261DDA57136B1DF /* wayfarer-demo-017.mp4 in Resources */,
+				9009E2EC26F3CB7F1118666C /* wayfarer-demo-018.mp4 in Resources */,
+				F89E4B3D2887F2C0C8896C13 /* wayfarer-demo-019.mp4 in Resources */,
+				931CF9A13499EB90F87D28AA /* wayfarer-demo-020.mp4 in Resources */,
+				D678D81583CCFA6302D1EAEC /* wayfarer-demo-021.mp4 in Resources */,
+				F3F1676BD0A5B00B164319BE /* wayfarer-demo-022.mp4 in Resources */,
+				6F623DEA9AF6F10F3F33EC16 /* wayfarer-demo-023.mp4 in Resources */,
+				02832A52C083F0B4DF03A9F2 /* wayfarer-demo-024.mp4 in Resources */,
+				09EAF490394BEBABD236477D /* wayfarer-demo-025.mp4 in Resources */,
+				0B4ED0968CF9BCB9572516B7 /* wayfarer-demo-026.mp4 in Resources */,
+				9FF39970CD9647B6677DB182 /* wayfarer-demo-027.mp4 in Resources */,
+				E303CBBCF2CA6D480264EC64 /* wayfarer-demo-028.mp4 in Resources */,
+				03AB795B475B1402B73E86E7 /* wayfarer-demo-029.mp4 in Resources */,
+				D3FEAA4F8DE76365EAD1D69F /* wayfarer-demo-030.mp4 in Resources */,
+				614D6A6D5126EA288517686D /* wayfarer-demo-031.mp4 in Resources */,
+				FBA7DF024BE5F775B0FCB76D /* wayfarer-demo-032.mp4 in Resources */,
+				A201E7B74FA47502C78A0B3D /* wayfarer-demo-033.mp4 in Resources */,
+				F6E8236A9DB5271976ECD20E /* wayfarer-demo-034.mp4 in Resources */,
+				D3C862E3C678640F7EA4115C /* wayfarer-demo-035.mp4 in Resources */,
+				5E928BCA44F31CDBB4AAC85A /* wayfarer-demo-036.mp4 in Resources */,
+				DC2E94FF8031708FF5052A8A /* wayfarer-demo-037.mp4 in Resources */,
+				3AF0673562C01D3D7817C907 /* wayfarer-demo-038.mp4 in Resources */,
+				1D26FF97B0DD0CF86D84929C /* wayfarer-demo-039.mp4 in Resources */,
+				CB1386EE0FC79C435FF53410 /* wayfarer-demo-040.mp4 in Resources */,
+				A55E5F10E30A1899B661425D /* wayfarer-demo-041.mp4 in Resources */,
+				B8BC0847D11F73B8AD804EAF /* wayfarer-demo-042.mp4 in Resources */,
+				A206ACD1A23F8AA3A30D4A14 /* wayfarer-demo-043.mp4 in Resources */,
+				DCCB07239C864C80BF9D07C9 /* wayfarer-demo-044.mp4 in Resources */,
+				C69569495B32BD808A5F2470 /* wayfarer-demo-045.mp4 in Resources */,
+				FEB80DB359BD988405FA6B57 /* wayfarer-demo-046.mp4 in Resources */,
+				FD4F0E44BE97E2FD08851976 /* wayfarer-demo-047.mp4 in Resources */,
+				910FB23AA9C3B0E37B25C3C4 /* wayfarer-demo-048.mp4 in Resources */,
+				EC30C5A5623306616A0890F1 /* wayfarer-demo-049.mp4 in Resources */,
+				B4E975D4A1E20F15E907B057 /* wayfarer-demo-050.mp4 in Resources */,
+				F5411C86B6257E3670CA388B /* wayfarer-demo-051.mp4 in Resources */,
+				DA365805105707EFD3DC1AF2 /* wayfarer-demo-052.mp4 in Resources */,
+				FAC76299BA48F034BA7A2307 /* wayfarer-demo-053.mp4 in Resources */,
+				AECE19F545B40D1DC26F1A7B /* wayfarer-demo-054.mp4 in Resources */,
+				C8231846F3F770C7E6C37807 /* wayfarer-demo-055.mp4 in Resources */,
+				8A083B73436D280FC2E2C8C8 /* wayfarer-demo-056.mp4 in Resources */,
+				2E8722DFC93A870438E1D5E1 /* wayfarer-demo-057.mp4 in Resources */,
+				B12F6850EFBCD2803FADD9B3 /* wayfarer-demo-058.mp4 in Resources */,
+				474A6BAAD9DFFDB6A9690D10 /* wayfarer-demo-059.mp4 in Resources */,
+				EDE738C6668AFB8FF9A24179 /* wayfarer-demo-060.mp4 in Resources */,
+				883B9F22A52698820EB5836E /* wayfarer-demo-061.mp4 in Resources */,
+				21AAA2A754501510DA423C23 /* wayfarer-demo-062.mp4 in Resources */,
+				B6E538BEC6C590CF20757E42 /* wayfarer-demo-063.mp4 in Resources */,
+				22006D348D96DDAD5DAF087F /* wayfarer-demo-064.mp4 in Resources */,
+				D5ECF0DA088D185481B212C2 /* wayfarer-demo-065.mp4 in Resources */,
+				A32892EC46AC197D34A9E69B /* wayfarer-demo-066.mp4 in Resources */,
+				5D8E0FF0AEADBF92DAB5D343 /* wayfarer-demo-067.mp4 in Resources */,
+				6C6FD2CCAF42419C4123ED36 /* wayfarer-demo-068.mp4 in Resources */,
+				07BC5D648590DFF0B15909A7 /* wayfarer-demo-069.mp4 in Resources */,
+				FF46E8E1B06624020D2496D0 /* wayfarer-demo-070.mp4 in Resources */,
+				FEDCEEA89DB94398BA0CEA80 /* wayfarer-demo-071.mp4 in Resources */,
+				B84A6EBEF11423E8CCEFC889 /* wayfarer-demo-072.mp4 in Resources */,
+				F1F1776C0B33907758D70048 /* wayfarer-demo-073.mp4 in Resources */,
+				0D131806872F80306A19083D /* wayfarer-demo-074.mp4 in Resources */,
+				A39FF978AFA1AB4702DC3E5A /* wayfarer-demo-075.mp4 in Resources */,
+				D57373C58C1E2445CECCF18E /* wayfarer-demo-076.mp4 in Resources */,
+				31314D359A358EE0CF011FBC /* wayfarer-demo-077.mp4 in Resources */,
+				3CB57D602DDF8C3094EF73E2 /* wayfarer-demo-078.mp4 in Resources */,
+				24E959CA19AECE733764AFDE /* wayfarer-demo-079.mp4 in Resources */,
+				F8EFD83328CD192DE5CB22DB /* wayfarer-demo-080.mp4 in Resources */,
+				517E591832F7FB6C095FA96B /* wayfarer-demo-081.mp4 in Resources */,
+				B7C1D4330F500B6CB403AE49 /* wayfarer-demo-082.mp4 in Resources */,
+				00D23F9E86337A48CB7F6C09 /* wayfarer-demo-083.mp4 in Resources */,
+				F8D1AB32928F9A380D6F54DB /* wayfarer-demo-084.mp4 in Resources */,
+				E388E4D5C91ED4B1860C4CD7 /* wayfarer-demo-085.mp4 in Resources */,
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXResourcesBuildPhase section */
+
+/* Begin PBXSourcesBuildPhase section */
+		2C4C43B912089102EFFA0B44 /* Sources */ = {
+			isa = PBXSourcesBuildPhase;
+			buildActionMask = 2147483647;
+			files = (
+			);
+			runOnlyForDeploymentPostprocessing = 0;
+		};
+/* End PBXSourcesBuildPhase section */
+
+/* Begin XCBuildConfiguration section */
+		1679EA64ACBB9FC48A3B43AC /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Wayfarer;
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Save your finished montage to your photo library.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Read capture dates for videos you select. Your videos stay on your device.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.prateek.wayfarer;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		73576FCFBB246BC0BD0C3B83 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ASSETCATALOG_COMPILER_APPICON_NAME = AppIcon;
+				CODE_SIGN_IDENTITY = "iPhone Developer";
+				GENERATE_INFOPLIST_FILE = YES;
+				INFOPLIST_KEY_CFBundleDisplayName = Wayfarer;
+				INFOPLIST_KEY_NSPhotoLibraryAddUsageDescription = "Save your finished montage to your photo library.";
+				INFOPLIST_KEY_NSPhotoLibraryUsageDescription = "Read capture dates for videos you select. Your videos stay on your device.";
+				INFOPLIST_KEY_UIApplicationSceneManifest_Generation = YES;
+				INFOPLIST_KEY_UILaunchScreen_Generation = YES;
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPad = "UIInterfaceOrientationPortrait UIInterfaceOrientationPortraitUpsideDown UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				INFOPLIST_KEY_UISupportedInterfaceOrientations_iPhone = "UIInterfaceOrientationPortrait UIInterfaceOrientationLandscapeLeft UIInterfaceOrientationLandscapeRight";
+				LD_RUNPATH_SEARCH_PATHS = (
+					"$(inherited)",
+					"@executable_path/Frameworks",
+				);
+				PRODUCT_BUNDLE_IDENTIFIER = com.prateek.wayfarer;
+				SDKROOT = iphoneos;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+		741F96E8E58DEAEDD451242C /* Release */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 3;
+				DEBUG_INFORMATION_FORMAT = "dwarf-with-dsym";
+				ENABLE_NS_ASSERTIONS = NO;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = NO;
+				MTL_FAST_MATH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_COMPILATION_MODE = wholemodule;
+				SWIFT_OPTIMIZATION_LEVEL = "-O";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Release;
+		};
+		D68EFDAF2AD897315D75BE75 /* Debug */ = {
+			isa = XCBuildConfiguration;
+			buildSettings = {
+				ALWAYS_SEARCH_USER_PATHS = NO;
+				CLANG_ANALYZER_NONNULL = YES;
+				CLANG_ANALYZER_NUMBER_OBJECT_CONVERSION = YES_AGGRESSIVE;
+				CLANG_CXX_LANGUAGE_STANDARD = "gnu++14";
+				CLANG_CXX_LIBRARY = "libc++";
+				CLANG_ENABLE_MODULES = YES;
+				CLANG_ENABLE_OBJC_ARC = YES;
+				CLANG_ENABLE_OBJC_WEAK = YES;
+				CLANG_WARN_BLOCK_CAPTURE_AUTORELEASING = YES;
+				CLANG_WARN_BOOL_CONVERSION = YES;
+				CLANG_WARN_COMMA = YES;
+				CLANG_WARN_CONSTANT_CONVERSION = YES;
+				CLANG_WARN_DEPRECATED_OBJC_IMPLEMENTATIONS = YES;
+				CLANG_WARN_DIRECT_OBJC_ISA_USAGE = YES_ERROR;
+				CLANG_WARN_DOCUMENTATION_COMMENTS = YES;
+				CLANG_WARN_EMPTY_BODY = YES;
+				CLANG_WARN_ENUM_CONVERSION = YES;
+				CLANG_WARN_INFINITE_RECURSION = YES;
+				CLANG_WARN_INT_CONVERSION = YES;
+				CLANG_WARN_NON_LITERAL_NULL_CONVERSION = YES;
+				CLANG_WARN_OBJC_IMPLICIT_RETAIN_SELF = YES;
+				CLANG_WARN_OBJC_LITERAL_CONVERSION = YES;
+				CLANG_WARN_OBJC_ROOT_CLASS = YES_ERROR;
+				CLANG_WARN_QUOTED_INCLUDE_IN_FRAMEWORK_HEADER = YES;
+				CLANG_WARN_RANGE_LOOP_ANALYSIS = YES;
+				CLANG_WARN_STRICT_PROTOTYPES = YES;
+				CLANG_WARN_SUSPICIOUS_MOVE = YES;
+				CLANG_WARN_UNGUARDED_AVAILABILITY = YES_AGGRESSIVE;
+				CLANG_WARN_UNREACHABLE_CODE = YES;
+				CLANG_WARN__DUPLICATE_METHOD_MATCH = YES;
+				COPY_PHASE_STRIP = NO;
+				CURRENT_PROJECT_VERSION = 3;
+				DEBUG_INFORMATION_FORMAT = dwarf;
+				ENABLE_STRICT_OBJC_MSGSEND = YES;
+				ENABLE_TESTABILITY = YES;
+				GCC_C_LANGUAGE_STANDARD = gnu11;
+				GCC_DYNAMIC_NO_PIC = NO;
+				GCC_NO_COMMON_BLOCKS = YES;
+				GCC_OPTIMIZATION_LEVEL = 0;
+				GCC_PREPROCESSOR_DEFINITIONS = (
+					"$(inherited)",
+					"DEBUG=1",
+				);
+				GCC_WARN_64_TO_32_BIT_CONVERSION = YES;
+				GCC_WARN_ABOUT_RETURN_TYPE = YES_ERROR;
+				GCC_WARN_UNDECLARED_SELECTOR = YES;
+				GCC_WARN_UNINITIALIZED_AUTOS = YES_AGGRESSIVE;
+				GCC_WARN_UNUSED_FUNCTION = YES;
+				GCC_WARN_UNUSED_VARIABLE = YES;
+				IPHONEOS_DEPLOYMENT_TARGET = 26.0;
+				MARKETING_VERSION = 1.0;
+				MTL_ENABLE_DEBUG_INFO = INCLUDE_SOURCE;
+				MTL_FAST_MATH = YES;
+				ONLY_ACTIVE_ARCH = YES;
+				PRODUCT_NAME = "$(TARGET_NAME)";
+				SDKROOT = iphoneos;
+				SWIFT_ACTIVE_COMPILATION_CONDITIONS = DEBUG;
+				SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+				SWIFT_STRICT_CONCURRENCY = complete;
+				SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
+				SWIFT_VERSION = 6.0;
+				TARGETED_DEVICE_FAMILY = "1,2";
+			};
+			name = Debug;
+		};
+/* End XCBuildConfiguration section */
+
+/* Begin XCConfigurationList section */
+		957B5156D63469554905CE57 /* Build configuration list for PBXProject "Wayfarer" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				D68EFDAF2AD897315D75BE75 /* Debug */,
+				741F96E8E58DEAEDD451242C /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+		FF598384483FD30BCE1F976E /* Build configuration list for PBXNativeTarget "Wayfarer" */ = {
+			isa = XCConfigurationList;
+			buildConfigurations = (
+				73576FCFBB246BC0BD0C3B83 /* Debug */,
+				1679EA64ACBB9FC48A3B43AC /* Release */,
+			);
+			defaultConfigurationIsVisible = 0;
+			defaultConfigurationName = Debug;
+		};
+/* End XCConfigurationList section */
+
+/* Begin XCLocalSwiftPackageReference section */
+		66A2609297A62B8C73C04E17 /* XCLocalSwiftPackageReference "." */ = {
+			isa = XCLocalSwiftPackageReference;
+			relativePath = .;
+		};
+/* End XCLocalSwiftPackageReference section */
+
+/* Begin XCSwiftPackageProductDependency section */
+		CD4EBBCBCDED3C5508473CD2 /* MontageCore */ = {
+			isa = XCSwiftPackageProductDependency;
+			productName = MontageCore;
+		};
+/* End XCSwiftPackageProductDependency section */
+	};
+	rootObject = ED7EA0BE03C909ED88ED43A5 /* Project object */;
+}

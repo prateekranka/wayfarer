@@ -1,0 +1,110 @@
+import { test } from '@e2e-dev/mobile';
+import { expect } from 'e2e';
+import { tapControl, tapVisibleControl } from './controls.ts';
+
+test('swipe previews, preserve sound controls, explain styles, learn and reopen preferences', async ({ app, screen, device, agent }) => {
+  if (process.env.WAYFARER_USE_INSTALLED !== '1') await device.installApp();
+  await app.open();
+  await device.closeApp();
+  await app.open();
+  await screen.getByTestId('create-montage').tap();
+  await screen.getByTestId('sample-12').tap();
+  await expect(screen.getByTestId('clip-count')).toContainText('12 clips');
+  await screen.getByTestId('sample-music').tap();
+  await expect(screen.getByTestId('make-reel')).toBeEnabled();
+  await tapControl(screen, screen.getByTestId('duration-15'), 'down', 'make-reel');
+  await screen.getByTestId('make-reel').tap();
+  await expect(screen.getByTestId('playback-state')).toContainText('Ready to play');
+  await expect(screen.getByTestId('selected-edit-name')).toHaveText('Beat Sync · Balanced');
+  await expect(screen.getByTestId('playback-position')).toContainText(/^0:0[1-9] \/ /);
+  await app.screenshot('balanced-preview');
+
+  await tapVisibleControl(screen.getByTestId('preview-play-pause'));
+  await expect(screen.getByLabel('Play video', { exact: true })).toBeVisible();
+  await tapVisibleControl(screen.getByTestId('preview-mute'));
+  await expect(screen.getByTestId('preview-mute')).toHaveValue('Muted');
+  const frame = await screen.getByTestId('montage-player').boundingBox();
+  if (!frame) throw new Error('Preview has no accessibility frame for a swipe');
+  await screen.swipe({
+    from: { x: frame.x + frame.width * 0.85, y: frame.y + frame.height * 0.45 },
+    to: { x: frame.x + frame.width * 0.15, y: frame.y + frame.height * 0.45 },
+  });
+  await expect(screen.getByTestId('selected-edit-name')).toHaveText('Beat Sync · Scenic');
+  await expect(screen.getByTestId('playback-state')).toContainText('Ready to play');
+  await expect(screen.getByLabel('Play video', { exact: true })).toBeVisible();
+  await expect(screen.getByTestId('preview-mute')).toHaveValue('Muted');
+  await expect(screen.getByTestId('playback-position')).toHaveText('0:00 / 0:15', { timeout: 15_000 });
+  await app.screenshot('swiped-scenic-paused');
+  await tapVisibleControl(screen.getByTestId('preview-mute'));
+  await tapVisibleControl(screen.getByTestId('preview-play-pause'));
+  await expect(screen.getByTestId('playback-position')).toContainText(/^0:0[1-9] \/ /);
+  await tapVisibleControl(screen.getByTestId('variant-Beat Sync · Motion'));
+  await expect(screen.getByTestId('selected-edit-name')).toHaveText('Beat Sync · Motion');
+  await expect(screen.getByTestId('playback-state')).toContainText('Ready to play');
+  await tapVisibleControl(screen.getByTestId('edit-style-info'));
+  await expect(screen.getByText('What is Beat Sync?', { exact: true })).toBeVisible();
+  await expect(screen.getByText('Movement and visual interest, with longer holds.', { exact: true })).toBeVisible();
+  await app.screenshot('edit-style-explanations');
+  await tapVisibleControl(screen.getByTestId('close-edit-info'));
+  await expect(screen.getByTestId('playback-state')).toContainText('Ready to play');
+
+  await tapVisibleControl(screen.getByTestId('teach-style'));
+  const before = Number.parseInt((await screen.getByTestId('taste-feedback-count').textContent()) ?? '');
+  if (!Number.isFinite(before)) throw new Error('Missing feedback count');
+  await tapVisibleControl(screen.getByTestId('prefer-selected-edit'));
+  await expect(screen.getByTestId('taste-feedback-count')).toContainText(`${before + 1} comparisons recorded`);
+  await expect(screen.getByTestId('taste-save-status')).toHaveText('Saved on this device', { timeout: 15_000 });
+  await tapVisibleControl(screen.getByTestId('prefer-selected-edit'));
+  await expect(screen.getByTestId('taste-feedback-count')).toContainText(`${before + 1} comparisons recorded`);
+  await screen.scrollUntilVisible(screen.getByTestId('approve-edit-example'), { direction: 'down' });
+  const examplesBefore = Number.parseInt((await screen.getByTestId('approved-example-count').textContent()) ?? '');
+  await tapVisibleControl(screen.getByTestId('approve-edit-example'));
+  await expect(screen.getByTestId('approved-example-count')).toHaveText(`${examplesBefore + 1} approved edits`, { timeout: 15_000 });
+  await expect(screen.getByTestId('taste-save-status')).toHaveText('Saved on this device', { timeout: 15_000 });
+  await expect(screen.getByTestId('approved-example-count')).toContainText('approved edits');
+  await tapVisibleControl(screen.getByText('Preferences', { exact: true }));
+  await expect(screen.getByTestId('taste-enabled')).toBeVisible();
+  await app.screenshot('local-taste-preferences');
+  await tapVisibleControl(screen.getByTestId('close-my-style'));
+
+  // The visible edit is also the exported edit.
+  await screen.getByTestId('export-montage').tap();
+  await expect(screen.getByTestId('save-photos')).toBeVisible({ timeout: 180_000 });
+  await expect(screen.getByTestId('export-edit-name')).toHaveText('Beat Sync · Motion');
+  await expect(screen.getByTestId('preview-mute')).toHaveValue('Sound on');
+  await app.screenshot('finished-edit-with-sound-controls');
+  await tapVisibleControl(screen.getByTestId('keep-export-reference'));
+  await expect(screen.getByTestId('keep-export-reference')).toHaveText('Saved to My Style');
+  await tapVisibleControl(screen.getByTestId('close-export'));
+  await tapVisibleControl(screen.getByTestId('BackButton'));
+  await tapVisibleControl(screen.getByTestId('open-my-style'));
+  await expect(screen.getByTestId('taste-feedback-count')).toContainText(`${before + 1} comparisons recorded`);
+  await tapVisibleControl(screen.getByText('References', { exact: true }));
+  await screen.scrollUntilVisible(screen.getByTestId(/^approved-example-/).first(), { direction: 'down' });
+  await expect(screen.getByTestId(/^approved-example-/).first()).toBeVisible({ timeout: 15_000 });
+  await app.screenshot('saved-approved-example');
+  // Changing tabs returns the native form to its start without a driver-specific scroll search.
+  await tapVisibleControl(screen.getByText('Preferences', { exact: true }));
+  await tapVisibleControl(screen.getByText('References', { exact: true }));
+  await tapVisibleControl(screen.getByTestId(/^reference-[A-F0-9]/).first());
+  await expect(screen.getByTestId('file-player')).toBeVisible();
+  await screen.scrollUntilVisible(screen.getByTestId('reference-note'), { direction: 'down' });
+  await tapVisibleControl(screen.getByTestId('reference-note'));
+  await agent.act('Type into the focused reference note', { params: { text: 'Hold the scenery before changing scenes.' } });
+  await expect(screen.getByTestId('reference-note')).toHaveValue('Hold the scenery before changing scenes.', { timeout: 15_000 });
+  await tapVisibleControl(screen.getByTestId('close-note-keyboard'));
+  await tapVisibleControl(screen.getByTestId('save-reference-note'));
+  await expect(screen.getByText('Hold the scenery before changing scenes.', { exact: true })).toBeVisible();
+  await app.screenshot('reference-with-timestamp-note');
+  await tapVisibleControl(screen.getByTestId('BackButton'));
+  await tapVisibleControl(screen.getByTestId('close-my-style'));
+  await device.closeApp();
+  await app.open();
+  await tapVisibleControl(screen.getByTestId('open-my-style'));
+  await expect(screen.getByTestId('taste-feedback-count')).toContainText(`${before + 1} comparisons recorded`);
+  await tapVisibleControl(screen.getByText('References', { exact: true }));
+  await tapVisibleControl(screen.getByTestId(/^reference-[A-F0-9]/).first());
+  await screen.scrollUntilVisible(screen.getByText('Hold the scenery before changing scenes.', { exact: true }), { direction: 'down' });
+  await expect(screen.getByText('Hold the scenery before changing scenes.', { exact: true })).toBeVisible();
+  await app.screenshot('reference-note-after-restart');
+});

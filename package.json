@@ -1,0 +1,11 @@
+{
+  "private": true,
+  "type": "module",
+  "devDependencies": {
+    "e2e": "0.15.2",
+    "@e2e-dev/mobile": "0.9.0"
+  },
+  "scripts": {
+    "test:e2e": "e2e run"
+  }
+}

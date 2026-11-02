@@ -1,1 +1,168 @@
-# wayfarer
+# Wayfarer
+
+Wayfarer is a native iPhone and iPad app that makes travel montages from raw clips, a song, and creative direction. The user chooses the feeling. The app chooses the moments, source ranges, sequence, and cuts.
+
+The app targets iOS and iPadOS 26 or later. Production code uses Apple frameworks only. There is no account, network client, cloud upload, analytics SDK, or OpenAI API integration.
+
+## Getting started
+
+Requirements: macOS with Xcode 27 and Swift 6, XcodeGen 2.45 or later, and an iOS or iPadOS 26 simulator or device. Node.js and npm are needed for the end-to-end tests.
+
+1. Clone the repository and enter its directory.
+
+   ```sh
+   git clone https://github.com/prateekranka/wayfarer.git
+   cd wayfarer
+   ```
+
+2. Run `xcodegen generate` to generate the Xcode project from `project.yml`.
+3. Open `Wayfarer.xcodeproj` in Xcode.
+4. Select the `Wayfarer` scheme and an iPhone or iPad target, then run the app.
+
+The Xcode project is included, and `project.yml` is the source for regenerating it. Regenerate it after changing the project configuration.
+
+For a physical device, set your own signing team in Xcode. Simulator builds do not require a signing team.
+
+The app includes two public sample trips: 12 clips and 85 clips. These are bundled illustrated H.264 movies, created with the developer fixture generator. They are clearly identified as sample footage. They go through the real video analysis, music analysis, planner, preview, refinement, and export pipeline. The original sample soundtrack is synthesized locally. No personal Photos library is required for development.
+
+## Product flow
+
+Create a Montage → choose videos from Photos or Files → automatic analysis → choose a song → choose length and feeling → Make My Reel → watch three edits → replace or lock moments → Try Another Edit → export → save to Photos or share.
+
+Supported feelings are Beat Sync, Story, Cinematic, Highlights, People, and Places. Story/Highlights, Calm/Energetic, and Longer shots/Fast cuts controls change planner parameters. Output formats are 9:16, 1:1, 4:5, and 16:9. Original sound has a global level.
+
+The app refuses a song that is too short and footage that cannot fill the requested length. It does not secretly loop music, freeze frames, or repeat overlapping source ranges to reach a duration.
+
+Project options → Add more clips imports footage into the current journey. Existing edits and locks remain available. Generate another edit to include the new candidates.
+
+## Structure
+
+| Directory | Responsibility |
+| --- | --- |
+| `Core` | Codable domain types, scoring, constrained planning, refinement, validation |
+| `CoreTests` | Pure Swift Testing tests and an analysis fixture from generated media |
+| `Sources/Media` | Photos transfer, Files import, streaming fingerprints, bounded thumbnail cache |
+| `Sources/Analysis` | Video and music analysis actors |
+| `Sources/Persistence` | Atomic project manifests and local project packages |
+| `Sources/Rendering` | AVFoundation composition, preview, playback observation, export |
+| `Sources/Demo` | Encoded synthetic movies and original synthetic music |
+| `Sources/App` | Observation state, workflow coordination, app entry, visual tokens |
+| `Sources/Features` | Home, setup, results, source browser, moment refinement, export |
+| `tests` | TesterArmy e2e tests for native application behavior |
+
+`VideoAnalyzing`, `MusicAnalyzing`, and `MontagePlanning` separate intelligence from the UI. Video and music services exchange value types with the planner. A future remote intelligence provider can implement an async analysis boundary. Upload consent and transport would need an explicit future product design.
+
+## Finding moments
+
+The video analyzer decodes up to two frames per second, with a maximum of 600 samples per source. Frames have a maximum dimension of 384 pixels. It applies the source's display orientation before analysis.
+
+Vision supplies face rectangles, human rectangles, saliency, image labels, and aesthetics scores where supported. Pixel measurements supply luminance, contrast, a Laplacian blur estimate, composition, and compact spatial/color descriptors. Temporal descriptor differences estimate motion and stability. These are heuristics, not optical flow or a trained camera-shake classifier.
+
+Shot changes establish scene boundaries. Each scene is divided into useful regions that can support longer shots. A candidate stores its score components, semantic tags, subject bounds, capture date, representative frame, and strongest sampled time. The planner centers a shorter selection around that strongest time, within the candidate's bounds. Analysis sampling frequency does not force every shot to last half a second.
+
+Decoded frames are released after each sample. Only compressed thumbnails and small descriptors remain in the analysis run. Thumbnails are written locally. Cross-clip descriptor distance groups probable duplicates. This comparison is deliberately conservative and approximate.
+
+No smile, emotion, action, or location claim is fabricated when a classifier is unavailable. Low-confidence semantic labels are omitted.
+
+## Understanding music
+
+The audio analyzer uses an AVAssetReader output provider to stream mono Float32 PCM. It measures RMS energy with vDSP, spectral flux with an FFT, and onset peaks. Autocorrelation estimates tempo. The structured result contains energy samples, supported beats, strong onsets, section changes, and sustained builds.
+
+Tempo estimates can have half-time or double-time ambiguity. A strong beat means a measured high-salience event; it does not claim a verified downbeat. Vocal detection and lyric transcription are not implemented. `TimedLyric` provides the future domain boundary for legitimately obtained timed text.
+
+Music longer than 30 minutes is rejected. Protected content is rejected. Music must cover the selected montage duration.
+
+## Planning an edit
+
+The planner uses deterministic seeds and a bounded beam search. It combines individual quality and intent scores with sequence costs for repeated sources, similar scenes, chronology, and pacing. Story chronology is a soft score. Unknown capture dates can use import order.
+
+The search retains a duration-progress path so quality ranking does not remove every feasible completion. Complete plans are evaluated against the desired shot count. This keeps Cinematic slower than Beat Sync when the source material allows it.
+
+Planning uses a 600-tick-per-second grid. Neighboring unlocked segments can exchange a small amount of duration to align a cut with a music event. Every plan is validated before preview and export.
+
+Three variants have different profiles, prior-choice penalties, seeds, and music starts. A diversity check requires different selections or substantial sequence changes. A fully locked edit cannot generate three new visual versions; the app asks the user to unlock a moment.
+
+Locks retain the exact source range and duration. The planner inserts them near their saved timeline position. Timing is approximate when surrounding pacing changes. Rejected sources and moments are excluded. The result retains decision reasons, alternatives, and quality metrics.
+
+`PlanRefiner` changes a result without rerunning analysis. It validates source bounds, overlap, duration, and locks after replacement, resizing, movement, or removal.
+
+## Preview and export
+
+Preview first uses an AVPlayer composition at a 576-pixel render width. If the platform cannot play that composition, the app prepares a lower-resolution MP4 with the same decisions and audio mix. It caches up to four preview files per project. Switching back to a cached edit does not render it again. Preview preparation never requires a full-resolution export or another analysis pass.
+
+Compatible composition tracks handle mixed source formats. Source orientation, crop placement, music placement, and audio levels use the same assembly path for preview and final export. Cumulative cut boundaries are rounded to one shared 600 Hz time grid. Native instruction validation prevents uncovered ranges before playback or export.
+
+Video tracks alternate at cuts. The final source retains bounded decoding context, while playback stops at the planned duration. Preview files and final exports use the same output validation. If a native export ends more than one output frame early, the renderer makes one recovery attempt. It then trims the encoded file with AVFoundation's passthrough preset and validates the result before committing it. This step preserves the planner's decisions and avoids another video encode during trimming.
+
+Subject bounds guide cropping. Wide footage uses fit placement when an important subject would be cropped or no reliable subject is available. V1 does not add blurred backgrounds or animated crop tracking.
+
+Final export uses AVAssetExportSession's async API and state sequence. Vertical output is 1080 × 1920. The other ratios use 1080-class dimensions. The exporter writes a project-owned partial MP4 and commits it only after success. Cancellation or failure removes only that partial file and preserves the project.
+
+The primary format is high-quality H.264 MP4. Native Photos saving and the system share sheet use the actual exported file. Playback readiness and elapsed time come from AVPlayer observations.
+
+## Persistence, caching, and privacy
+
+Projects live in Application Support under `Wayfarer/Projects/<UUID>`. Selected video and audio files are copied into the project package. Source fingerprints use streaming SHA-256. Duplicate selected content is skipped rather than analyzed again.
+
+An atomic JSON manifest stores source references, moments, music analysis, creative settings, plans, locks, rejections, selected version, and output settings. Each completed source is checkpointed. Reopening an interrupted project analyzes only incomplete sources. Changing the video-analysis version deliberately invalidates cached moments and plans. Editing a result does not invalidate source analysis.
+
+Project media and incoming transfer copies are excluded from device backup. The app sends no media or semantic content to a service. Photos may download selected iCloud assets through Apple's picker. Saving to Photos or using Share is an explicit user action; the destination's own synchronization settings apply.
+
+The privacy manifest declares no tracking or collected data. It records required API reasons for storage checks, elapsed processing time, and metadata of app-owned or user-selected files, following [Apple's required reason API documentation](https://developer.apple.com/documentation/bundleresources/describing-use-of-required-reason-api).
+
+Expensive work runs in actors or a detached planning task. Analysis concurrency is one source at a time. The app pauses active work when it enters the background. Completed imports and analysis survive. Pending picker selections may need to be selected again after an interrupted import.
+
+Planner cancellation propagates to the search task. Slider changes coalesce into one saved manifest after a short delay. Processing checkpoints and background saves write immediately. A damaged manifest is reported without hiding the other saved projects.
+
+## Tests
+
+Pure planner tests run with:
+
+```sh
+swift test
+```
+
+They cover quality selection, duplicate suppression, duration, soft chronology, intent pacing, determinism, locks, rejections, refinement, and a regression fixture from encoded sample footage.
+
+All native app behavior tests use [TesterArmy e2e](https://github.com/tester-army/e2e). No agent steps or model provider are required for these deterministic tests.
+
+```sh
+npm ci
+npx e2e run tests/montage.e2e.ts
+```
+
+Build the simulator app first. The configuration points to `work/DerivedData/Build/Products/Debug-iphonesimulator/Wayfarer.app` and names the current simulator explicitly. Set `WAYFARER_APP_PATH` to use a different build. Change the device entry when using another already-booted target. The `wayfarer-native` session name prevents a different project from sharing the same default session. Use an exclusive device for complete workflow runs. See the TesterArmy e2e documentation before adding or running app-flow tests. Generated test output is ignored by Git.
+
+Screenshots are enabled in the tests. Automatic video recording is off by default. With multiple booted simulators, the current e2e mobile engine can start recording before the test binds its app session to the selected device. For a recording, use a preinstalled app and a configuration without `appPath`, then pass `--video on`. Keep the device entry explicit.
+
+Set `WAYFARER_USE_INSTALLED=1` to test an already installed app without another installation. Verify its bundle ID and build identity first. This mode omits `appPath` and skips the tests’ install step. `WAYFARER_TEST_SESSION` can give a run its own session name. Readiness assertions remain active when the optional post-action settle wait is disabled.
+
+The loaded Photos picker currently exposes no controls through this e2e mobile engine. Its diagnostic is explicitly skipped by default. Set `WAYFARER_TEST_PHOTOS_PICKER=1` to investigate it. Photos import selection remains unverified. The Files test proves picker opening and cancellation, not file selection. `export-timing.e2e.ts` is an optional focused retry against a saved project UUID supplied through `WAYFARER_TIMING_PROJECT_ID`. The self-contained settings test covers the same export path without that prerequisite.
+
+Current build and runtime evidence is recorded in [VERIFICATION.md](docs/VERIFICATION.md). The 85-clip test uses encoded illustrated footage; it is a repeatable pipeline check, not a benchmark for 4K or HDR camera-roll media.
+
+UI tests exercise real encoded sample media, all three previews, replacement, two locks, regeneration, export, Photos saving, and reopening. Build success proves compilation; it does not prove app behavior. Generated reports and videos belong under ignored `work/` evidence, never a product branch.
+
+In Debug builds, Project options → Editing decisions shows processing times, source coverage, pacing, beat alignment, chronology, quality, and per-shot reasons.
+
+## Limits and next intelligence upgrades
+
+- Synthetic illustrated media proves the media workflow. It does not prove editorial quality on every real trip.
+- Sparse sampling can miss brief moments in very long clips. Upgrade to hierarchical sampling around promising regions.
+- Motion, blur, exposure, and duplicate detection use practical heuristics. Add optical flow and calibrated feature-print or model embeddings behind the analysis boundary.
+- Cropping uses a representative subject anchor. Add time-varying anchors for subject tracking.
+- Capture dates may be unavailable for selected media. Use imported order as a fallback and keep chronology soft.
+- Vocals, confirmed downbeats, smiles, and lyric matching remain future features.
+- Original sound uses a global level. Future audio-event analysis can raise laughter, waves, or speech selectively.
+- Hardware performance, large HDR collections, and iPad layouts require device-specific release validation.
+
+## Collaborating
+
+- Create a branch for each change and open a pull request for review.
+- Keep real user media, signing credentials, local tool configuration, build output, and generated test evidence out of the repository. The sample media in `Resources` is synthetic.
+- Document device, simulator, and test limitations when reporting a change. See [VERIFICATION.md](docs/VERIFICATION.md) for existing evidence; it is historical and does not guarantee a new build passes.
+- The repository does not require API keys for the app as currently documented.
+
+## Visual redesign
+
+The Screening Room redesign uses adaptive colors, trip imagery, simpler setup, and horizontally paged edits. See [REDESIGN_VERIFICATION.md](docs/REDESIGN_VERIFICATION.md) for the build, native e2e results, screenshots, and review limits. Set `WAYFARER_TEST_DEVICE` to target a specific already-booted simulator without changing the default configuration.

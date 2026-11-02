@@ -1,0 +1,41 @@
+import { test } from './catalog.ts';
+import { expect } from 'e2e';
+import { tapControl, tapVisibleControl } from './controls.ts';
+
+// Run after the reel matrix. All interaction remains inside TesterArmy e2e.
+test('catalog: source filters, moment preview, actions, alternatives and locks', async ({ app, screen, device, capture }) => {
+  await device.installApp();
+  await app.open();
+  await tapVisibleControl(screen.getByTestId(/^project-card-/).first());
+  await expect(screen.getByTestId('playback-state')).toContainText('Ready to play');
+  await tapVisibleControl(screen.getByLabel('Project options', { exact: true }));
+  await capture('project-options-menu');
+  await tapVisibleControl(screen.getByText('Browse source moments', { exact: true }));
+  await expect(screen.getByText('Your source moments', { exact: true })).toBeVisible();
+  await capture('source-browser-best-moments');
+  await tapVisibleControl(screen.getByLabel(/^Browse,/));
+  await capture('source-browser-filter-menu');
+  await tapVisibleControl(screen.getByText('Food', { exact: true }));
+  await capture(await screen.getByText('0 moments', { exact: true }).isVisible() ? 'source-browser-empty-food' : 'source-browser-food');
+  await tapVisibleControl(screen.getByText('Done', { exact: true }));
+  await tapControl(screen, screen.getByTestId('refine-edit'), 'down', 'export-montage');
+  await expect(screen.getByTestId('locked-count')).toBeVisible();
+  await capture('refinement-no-locks');
+  await tapVisibleControl(screen.getByLabel('Preview moment 1', { exact: true }));
+  await expect(screen.getByTestId('file-player')).toBeVisible();
+  await capture('source-moment-player');
+  await tapVisibleControl(screen.getByText('Done', { exact: true }));
+  await tapVisibleControl(screen.getByLabel('More actions for moment 1', { exact: true }));
+  await capture('moment-actions-menu');
+  await tapVisibleControl(screen.getByText('Make shorter', { exact: true }));
+  await tapVisibleControl(screen.getByTestId('replace-shot-0'));
+  await expect(screen.getByTestId('alternative-0')).toBeVisible();
+  await capture('alternatives-preference-off');
+  await tapVisibleControl(screen.getByTestId('learn-moment-preference'));
+  await capture('alternatives-preference-on');
+  await tapVisibleControl(screen.getByTestId('alternative-0'));
+  await expect(screen.getByTestId('lock-shot-0')).toBeVisible();
+  await tapVisibleControl(screen.getByTestId('lock-shot-0'));
+  await capture('refinement-one-moment-locked');
+  await expect(screen.getByTestId('locked-count')).toContainText(/\b1 moment locked\b/);
+});
