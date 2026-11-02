@@ -82,6 +82,10 @@ Planning uses a 600-tick-per-second grid. Neighboring unlocked segments can exch
 
 Three variants have different profiles, prior-choice penalties, seeds, and music starts. A diversity check requires different selections or substantial sequence changes. A fully locked edit cannot generate three new visual versions; the app asks the user to unlock a moment.
 
+Each style has a recipe in `Core/Recipes/recipes.json`: its shortest and longest shot, beats per shot in loud and quiet parts of the song, the most moments from one clip, how far a cut may move to reach a musical event, and how it opens and ends. Recipes change sequence scores in `RecipePacing`. They also reward the strongest moment at the song's biggest build, and penalize two face shots, two still shots, or two shots of the same size in a row. After the search, `fitShotLimits` lengthens shots below the shortest length by taking time from the longest ones. Rules are soft, so a small trip or locked moments can still produce an edit. A shot stays short if its moment is shorter than the limit.
+
+Shot size is a rough estimate from faces, subject size, and scene labels. Motion direction across a cut is not implemented, because the analyzer does not measure direction yet. Vision's models do not run in the iOS Simulator, so faces, labels, and subjects are all empty there. Rules that use them can only be checked on a device or with frames analyzed on a Mac.
+
 Locks retain the exact source range and duration. The planner inserts them near their saved timeline position. Timing is approximate when surrounding pacing changes. Rejected sources and moments are excluded. The result retains decision reasons, alternatives, and quality metrics.
 
 `PlanRefiner` changes a result without rerunning analysis. It validates source bounds, overlap, duration, and locks after replacement, resizing, movement, or removal.
@@ -172,6 +176,7 @@ In Debug builds, Project options → Editing decisions shows processing times, s
 
 - Synthetic illustrated media proves the media workflow. It does not prove editorial quality on every real trip.
 - Sparse sampling can miss brief moments in very long clips. Upgrade to hierarchical sampling around promising regions.
+- Recipe scores were tuned on one 13-clip trip. They need the wider test set of real trips, and a check on a device.
 - Motion, blur, exposure, and duplicate detection use practical heuristics. Add optical flow and calibrated feature-print or model embeddings behind the analysis boundary.
 - Cropping uses a representative subject anchor. Add time-varying anchors for subject tracking.
 - Each style has one fixed look, with one strength per project. Shot correction is one setting per shot, so light that changes during a shot is not followed. HDR output is not supported.

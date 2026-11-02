@@ -302,6 +302,7 @@ public actor VideoAnalysisService: VideoAnalyzing {
         for result in classifications where result.confidence >= 0.25 {
             let label = result.identifier.lowercased()
             if labelMatches(label, words: ["landscape", "mountain", "beach", "coast", "lake", "waterfall", "sky", "sunset", "forest", "desert", "park", "garden"]) { tags.insert("landscape") }
+            if labelMatches(label, words: ["sunset", "sunrise", "dusk"]) { tags.insert("sunset") }
             if labelMatches(label, words: ["food", "dish", "meal", "cuisine", "dessert", "fruit", "vegetable", "pizza", "sushi", "cake", "bread"]) { tags.insert("food") }
             if labelMatches(label, words: ["building", "architecture", "house", "tower", "bridge", "church", "temple", "monument", "skyscraper"]) { tags.insert("architecture") }
             if labelMatches(label, words: ["street", "road", "avenue", "sidewalk", "city", "urban", "traffic"]) { tags.insert("street") }

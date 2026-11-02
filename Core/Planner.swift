@@ -125,13 +125,14 @@ public struct MontagePlanner: MontagePlanning, Sendable {
                                               intent: request.intent, parameters: request.parameters,
                                               seed: request.seed, variant: variant)
             let beam = try search(candidates: unlocked, locks: locks, targetTicks: targetTicks,
-                              request: request, variant: variant,
+                              request: request, variant: variant, musicStart: musicStart,
                               existing: request.priorPlans + plans)
             guard !beam.isEmpty else { throw MontageError.insufficientFootage }
             var selected: MontagePlan?
             for state in beam {
                 var plan = makePlan(best: state, locks: locks, request: request,
                                     musicStart: musicStart, variant: variant, allCandidates: candidates)
+                fitShotLimits(&plan, request: request, candidates: candidates)
                 alignBoundaries(&plan, request: request, candidates: candidates)
                 plan.metrics = metrics(for: plan.segments, candidates: candidates, music: request.music, musicStart: musicStart)
                 if plans.allSatisfy({ isDistinct(plan, from: $0) }) { selected = plan; break }
@@ -236,7 +237,12 @@ public struct MontagePlanner: MontagePlanning, Sendable {
     }
 
     private func search(candidates: [CandidateMoment], locks: [MontageSegment], targetTicks: Int,
-                        request: PlanningRequest, variant: Int, existing: [MontagePlan]) throws -> [State] {
+                        request: PlanningRequest, variant: Int, musicStart: Double,
+                        existing: [MontagePlan]) throws -> [State] {
+        let recipe = StyleRecipe.recipe(for: request.intent)
+        let pacing = RecipePacing(recipe: recipe, music: request.music, musicStart: musicStart,
+                                  targetDuration: request.targetDuration, moments: candidates)
+        let shortestTicks = max(Self.minimumTicks, Self.ticks(recipe.shortestShot))
         let lockedTicks = locks.reduce(0) { $0 + Self.ticks($1.duration) }
         let lockIntervals = locks.map { SourceInterval(assetID: $0.sourceAssetID, start: $0.sourceStartTime,
                                                         end: $0.sourceStartTime + $0.duration) }
@@ -273,8 +279,12 @@ public struct MontagePlanner: MontagePlanning, Sendable {
                 let capacity = available.reduce(0) { $0 + Self.ticks($1.duration) }
                 guard capacity >= remaining else { continue }
                 let ranked = available.map { candidate in
-                    (candidate, candidateScore(candidate, state: state, request: request, variant: variant,
-                                               remaining: remaining, existing: existing))
+                    // Count the opening here too, or the shortlist below can
+                    // drop every shot the recipe wants to open on.
+                    let opening = state.chosen.isEmpty
+                        ? pacing.placementScore(candidate, isFirst: true, isLast: false, elapsed: -1, duration: 0) : 0
+                    return (candidate, opening + candidateScore(candidate, state: state, request: request, variant: variant,
+                                                                remaining: remaining, existing: existing))
                 }.sorted { lhs, rhs in
                     if abs(lhs.1 - rhs.1) > 0.000001 { return lhs.1 > rhs.1 }
                     return lhs.0.id.uuidString < rhs.0.id.uuidString
@@ -288,6 +298,10 @@ public struct MontagePlanner: MontagePlanning, Sendable {
                                                tasteProfile: request.tasteProfile)
                     var options = Set([max(Self.minimumTicks, min(maximum, desired)), maximum])
                     if remaining <= maximum { options.insert(remaining) }
+                    // Leave enough time for one last shot within the recipe's limit.
+                    if remaining - shortestTicks <= maximum, remaining - shortestTicks >= shortestTicks {
+                        options.insert(remaining - shortestTicks)
+                    }
                     if maximum - Self.minimumTicks > 180 { options.insert(max(Self.minimumTicks, maximum / 2)) }
                     for duration in options.sorted() {
                         let after = remaining - duration
@@ -299,7 +313,8 @@ public struct MontagePlanner: MontagePlanning, Sendable {
                         }
                         var nextState = state
                         let increment = sequenceScore(candidate, duration: duration, ending: after == 0,
-                                                      state: state, request: request, variant: variant, existing: existing)
+                                                      state: state, request: request, variant: variant,
+                                                      pacing: pacing, existing: existing)
                         nextState.chosen.append(Chosen(moment: candidate, ticks: duration, score: increment))
                         nextState.score += increment
                         nextState.usedIDs.insert(candidate.id)
@@ -388,10 +403,19 @@ public struct MontagePlanner: MontagePlanning, Sendable {
     }
 
     private func sequenceScore(_ candidate: CandidateMoment, duration: Int, ending: Bool, state: State,
-                               request: PlanningRequest, variant: Int, existing: [MontagePlan]) -> Double {
+                               request: PlanningRequest, variant: Int, pacing: RecipePacing,
+                               existing: [MontagePlan]) -> Double {
         var value = candidateScore(candidate, state: state, request: request, variant: variant,
                                    remaining: max(duration, Self.minimumTicks), existing: existing)
         let features = candidate.features
+        let elapsed = state.chosen.reduce(0) { $0 + $1.ticks }
+        value += pacing.score(duration: Double(duration) / Self.ticksPerSecond,
+                              elapsed: Double(elapsed) / Self.ticksPerSecond,
+                              momentsFromClip: state.chosen.filter { $0.moment.sourceAssetID == candidate.sourceAssetID }.count)
+        value += pacing.placementScore(candidate, isFirst: state.chosen.isEmpty, isLast: ending,
+                                       elapsed: Double(elapsed) / Self.ticksPerSecond,
+                                       duration: Double(duration) / Self.ticksPerSecond)
+        if let previous = state.last { value += pacing.varietyScore(candidate, after: previous) }
         if state.chosen.isEmpty {
             // Open on a legible, high-confidence image. A clear place or face
             // gives the edit an immediate subject instead of a weak setup frame.
@@ -475,6 +499,30 @@ public struct MontagePlanner: MontagePlanning, Sendable {
                            tasteProfile: request.tasteProfile)
     }
 
+    /// Lengthens shots below the recipe's shortest length, taking the time from
+    /// the longest unlocked shots. Each shot stays inside its own moment, and the
+    /// edit keeps its exact length. Shots stay short if nothing can give time.
+    private func fitShotLimits(_ plan: inout MontagePlan, request: PlanningRequest, candidates: [CandidateMoment]) {
+        let shortest = StyleRecipe.recipe(for: request.intent).shortestShot
+        let lookup = Dictionary(uniqueKeysWithValues: candidates.map { ($0.id, $0) })
+        for index in plan.segments.indices where !plan.segments[index].isLocked && plan.segments[index].duration < shortest {
+            guard let moment = lookup[plan.segments[index].momentID] else { continue }
+            var needed = min(shortest, moment.duration) - plan.segments[index].duration
+            let donors = plan.segments.indices.filter { !plan.segments[$0].isLocked && plan.segments[$0].duration > shortest }
+                .sorted { plan.segments[$0].duration > plan.segments[$1].duration }
+            for donor in donors where needed > 0 {
+                guard let source = lookup[plan.segments[donor].momentID] else { continue }
+                let taken = roundToTick(min(needed, plan.segments[donor].duration - shortest))
+                guard taken > 0 else { continue }
+                plan.segments[donor].duration -= taken
+                plan.segments[donor].sourceStartTime = source.preferredStart(for: plan.segments[donor].duration)
+                plan.segments[index].duration += taken
+                needed -= taken
+            }
+            plan.segments[index].sourceStartTime = moment.preferredStart(for: plan.segments[index].duration)
+        }
+    }
+
     /// Adjust neighboring unlocked shots together, so every musical cut keeps
     /// the requested length. Locks retain their exact source ranges and duration.
     private func alignBoundaries(_ plan: inout MontagePlan, request: PlanningRequest, candidates: [CandidateMoment]) {
@@ -483,6 +531,8 @@ public struct MontagePlanner: MontagePlanning, Sendable {
         let events = request.music.events.filter {
             $0.kind == .strongBeat || $0.kind == .beat || $0.kind == .transition
         }
+        let recipe = StyleRecipe.recipe(for: request.intent)
+        let shortest = max(0.5, recipe.shortestShot)
         var elapsed = 0.0
         for index in 0..<(plan.segments.count - 1) {
             elapsed += plan.segments[index].duration
@@ -490,7 +540,7 @@ public struct MontagePlanner: MontagePlanning, Sendable {
                   let left = lookup[plan.segments[index].momentID],
                   let right = lookup[plan.segments[index + 1].momentID] else { continue }
             let desired = plan.musicStartTime + elapsed
-            let tolerance = request.intent == .beatSync ? 0.28 : 0.12
+            let tolerance = recipe.cutTolerance
             let eligible = events.filter { abs($0.time - desired) <= tolerance }
             guard let event = eligible.min(by: {
                 abs($0.time - desired) - $0.strength * 0.035 < abs($1.time - desired) - $1.strength * 0.035
@@ -498,7 +548,7 @@ public struct MontagePlanner: MontagePlanning, Sendable {
             let shift = roundToTick(event.time - desired)
             let leftDuration = plan.segments[index].duration + shift
             let rightDuration = plan.segments[index + 1].duration - shift
-            guard leftDuration >= 0.5, rightDuration >= 0.5,
+            guard leftDuration >= shortest, rightDuration >= shortest,
                   leftDuration <= left.duration, rightDuration <= right.duration else { continue }
             plan.segments[index].duration = leftDuration
             plan.segments[index + 1].duration = rightDuration
