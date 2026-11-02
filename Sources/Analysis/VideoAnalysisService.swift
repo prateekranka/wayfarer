@@ -150,6 +150,19 @@ public actor VideoAnalysisService: VideoAnalyzing {
                 )
             )
         }
+        try Task.checkCancellation()
+        let sounds = await ClipSignalAnalyzer.sounds(in: sourceURL)
+        let times = moments.map { $0.peakTime ?? ($0.sourceStartTime + $0.sourceEndTime) / 2 }
+        let motion = await ClipSignalAnalyzer.motion(in: sourceURL, at: times)
+        for index in moments.indices {
+            let moment = moments[index]
+            let heard = Set(sounds.filter { $0.start < moment.sourceEndTime && $0.end > moment.sourceStartTime }.map(\.label))
+            let measured = motion.first { $0.time == times[index] }
+            let signals = MomentSignals(sounds: heard.sorted(), speed: measured?.speed,
+                                        direction: measured?.direction, agreement: measured?.agreement)
+            moments[index].signals = signals
+            if let score = signals.motionScore { moments[index].features.motion = score }
+        }
         return moments.sorted { $0.sourceStartTime < $1.sourceStartTime }
     }
 

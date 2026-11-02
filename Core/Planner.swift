@@ -25,6 +25,32 @@ public enum MomentScorer {
         return clamp(value)
     }
 
+    /// Sounds of people enjoying themselves, which suit any edit.
+    static let peopleSounds: Set<String> = ["laughter", "giggling", "belly_laugh", "chuckle_chortle", "snicker",
+        "cheering", "applause", "clapping", "crowd", "children_shouting", "singing", "choir_singing", "baby_laughter", "yell"]
+    /// Sounds that say where you are, which suit edits about the journey.
+    static let placeSounds: Set<String> = ["ocean", "sea_waves", "water", "stream_burbling", "waterfall", "rain", "thunder",
+        "bird", "bird_chirp_tweet", "bird_squawk", "church_bell", "bell", "train", "rail_transport", "subway_metro",
+        "airplane", "aircraft", "boat_water_vehicle", "traffic_noise", "car_horn", "glass_clink", "cutlery_silverware", "whistling"]
+
+    /// A bonus for moments whose sound adds something. Clips with no sound
+    /// results lose nothing, because the model cannot run everywhere.
+    public static func soundScore(_ moment: CandidateMoment, intent: EditIntent) -> Double {
+        guard let sounds = moment.signals?.sounds, !sounds.isEmpty else { return 0 }
+        let hasPeople = sounds.contains(where: peopleSounds.contains)
+        let hasPlace = sounds.contains(where: placeSounds.contains)
+        var value = 0.0
+        switch intent {
+        case .people, .story: value += hasPeople ? 0.14 : 0
+        default: value += hasPeople ? 0.08 : 0
+        }
+        switch intent {
+        case .travel, .places, .story: value += hasPlace ? 0.08 : 0
+        default: break
+        }
+        return value
+    }
+
     public static func semanticScore(_ moment: CandidateMoment, intent: EditIntent) -> Double {
         let f = moment.features
         switch intent {
@@ -46,7 +72,9 @@ public enum MomentScorer {
         let sliderEffect = parameters.highlights * 0.08 * f.interest
             + parameters.energy * 0.08 * f.motion
             + parameters.fastCuts * 0.04 * f.interest
-        return clamp(base + sliderEffect + Double(moment.userPreference) * 0.025)
+        // Cinematic wants calm shots. This only applies to measured motion.
+        let calm = intent == .cinematic ? (moment.signals?.motionScore ?? 0) * 0.20 : 0
+        return clamp(base + sliderEffect + soundScore(moment, intent: intent) - calm + Double(moment.userPreference) * 0.025)
     }
 
     public static func score(_ moment: CandidateMoment,
@@ -594,6 +622,10 @@ public struct MontagePlanner: MontagePlanning, Sendable {
            abs(tasteProfile.durationMultiplier(for: request.intent) - 1) > TasteProfile.epsilon
                 || abs(tasteProfile.scoreAdjustment(for: moment, intent: request.intent)) > TasteProfile.epsilon {
             result.append("personalized to your taste")
+        }
+        if let sounds = moment.signals?.sounds {
+            if sounds.contains(where: MomentScorer.peopleSounds.contains) { result.append("has the sound of people") }
+            if sounds.contains(where: MomentScorer.placeSounds.contains) { result.append("has the sound of the place") }
         }
         if result.isEmpty { result.append("balanced for the selected intent") }
         return result

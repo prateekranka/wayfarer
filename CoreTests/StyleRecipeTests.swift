@@ -114,3 +114,54 @@ private func moment(faces: Double = 0, people: Double = 0, motion: Double = 0.5,
                                                      MusicEvent(time: 24, kind: .drop, strength: 0.5)])
     #expect(RecipePacing.peakTime(in: music, musicStart: 10, duration: 30) == 14)
 }
+
+private func moving(speed: Double, direction: Double, agreement: Double = 0.9) -> CandidateMoment {
+    var result = moment(motion: 0.9)
+    result.signals = MomentSignals(speed: speed, direction: direction, agreement: agreement)
+    return result
+}
+
+@Test func onlyClearMovementCountsAgainstACut() {
+    let pacing = RecipePacing(recipe: .recipe(for: .travel), music: song(bpm: 120), musicStart: 0)
+    #expect(pacing.movesAgainst(moving(speed: 0.3, direction: 0), moving(speed: 0.3, direction: .pi)))
+    #expect(!pacing.movesAgainst(moving(speed: 0.3, direction: 0), moving(speed: 0.3, direction: 0.3)))
+    #expect(!pacing.movesAgainst(moving(speed: 0.02, direction: 0), moving(speed: 0.3, direction: .pi)))
+    #expect(!pacing.movesAgainst(moving(speed: 0.3, direction: 0, agreement: 0.2), moving(speed: 0.3, direction: .pi)))
+    #expect(!pacing.movesAgainst(moment(), moment()))
+    #expect(pacing.varietyScore(moving(speed: 0.3, direction: .pi), after: moving(speed: 0.3, direction: 0))
+        < pacing.varietyScore(moving(speed: 0.3, direction: 0), after: moving(speed: 0.3, direction: 0)))
+}
+
+private func heard(_ sounds: [String]) -> CandidateMoment {
+    var result = moment()
+    result.signals = MomentSignals(sounds: sounds)
+    return result
+}
+
+@Test func usefulSoundsRaiseAMoment() {
+    #expect(MomentScorer.soundScore(heard(["laughter"]), intent: .people) > MomentScorer.soundScore(heard(["laughter"]), intent: .places))
+    #expect(MomentScorer.soundScore(heard(["ocean"]), intent: .travel) > 0)
+    #expect(MomentScorer.soundScore(heard(["ocean"]), intent: .beatSync) == 0)
+    #expect(MomentScorer.soundScore(heard(["door"]), intent: .travel) == 0)
+    #expect(MomentScorer.soundScore(moment(), intent: .people) == 0)
+    #expect(MomentScorer.score(heard(["laughter"]), intent: .people) > MomentScorer.score(moment(), intent: .people))
+}
+
+@Test func measuredSpeedBecomesAMotionScore() throws {
+    #expect(MomentSignals(speed: 0.2).motionScore == 0.5)
+    #expect(MomentSignals(speed: 2).motionScore == 1)
+    #expect(MomentSignals().motionScore == nil)
+    var saved = heard(["laughter"])
+    saved.signals?.speed = 0.2
+    let reopened = try JSONDecoder().decode(CandidateMoment.self, from: JSONEncoder().encode(saved))
+    #expect(reopened.signals == saved.signals)
+    var object = try #require(JSONSerialization.jsonObject(with: JSONEncoder().encode(saved)) as? [String: Any])
+    object.removeValue(forKey: "signals")
+    #expect(try JSONDecoder().decode(CandidateMoment.self, from: JSONSerialization.data(withJSONObject: object)).signals == nil)
+}
+
+@Test func cinematicPrefersCalmShotsWhenMotionIsMeasured() {
+    let calm = moving(speed: 0.02, direction: 0)
+    let fast = moving(speed: 0.4, direction: 0)
+    #expect(MomentScorer.score(calm, intent: .cinematic) > MomentScorer.score(fast, intent: .cinematic))
+}

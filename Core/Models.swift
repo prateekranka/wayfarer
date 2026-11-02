@@ -101,6 +101,27 @@ public struct SubjectAnchor: Codable, Equatable, Sendable {
     }
 }
 
+/// What a moment sounds like, and how it really moves. Fields stay empty where
+/// Apple's models cannot run, such as the Simulator.
+public struct MomentSignals: Codable, Equatable, Sendable {
+    /// Sounds heard during the moment, from the on-device sound model.
+    public var sounds: [String]
+    /// Share of the frame's width moved per second.
+    public var speed: Double?
+    /// Direction in radians. 0 is right, and positive is down.
+    public var direction: Double?
+    /// How much of the movement agrees on one direction, from 0 to 1.
+    public var agreement: Double?
+
+    public init(sounds: [String] = [], speed: Double? = nil, direction: Double? = nil, agreement: Double? = nil) {
+        self.sounds = sounds; self.speed = speed; self.direction = direction; self.agreement = agreement
+    }
+
+    /// Measured speed as a 0-to-1 motion score. Most walking and panning is
+    /// under 40% of the frame per second.
+    public var motionScore: Double? { speed.map { min(1, max(0, $0 / 0.4)) } }
+}
+
 public struct CandidateMoment: Codable, Identifiable, Sendable, Equatable {
     public var id: UUID
     public var sourceAssetID: UUID
@@ -118,6 +139,8 @@ public struct CandidateMoment: Codable, Identifiable, Sendable, Equatable {
     public var userPreference: Int = 0
     public var peakTime: Double?
     public var importOrder: Int?
+    /// Optional so moments saved before these existed still decode.
+    public var signals: MomentSignals?
     public init(id: UUID = UUID(), sourceAssetID: UUID, sourceStartTime: Double, sourceEndTime: Double,
                 features: MomentFeatures, semanticTags: [String] = [], timestamp: Date? = nil,
                 confidence: Double = 0.5, featureVector: [Float] = [], clusterID: Int = -1,

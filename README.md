@@ -56,9 +56,11 @@ Project options → Add more clips imports footage into the current journey. Exi
 
 The video analyzer decodes up to two frames per second, with a maximum of 600 samples per source. Frames have a maximum dimension of 384 pixels. It applies the source's display orientation before analysis.
 
-Vision supplies face rectangles, human rectangles, saliency, image labels, and aesthetics scores where supported. Pixel measurements supply luminance, contrast, a Laplacian blur estimate, composition, and compact spatial/color descriptors. Temporal descriptor differences estimate motion and stability. These are heuristics, not optical flow or a trained camera-shake classifier.
+Vision supplies face rectangles, human rectangles, saliency, image labels, and aesthetics scores where supported. Pixel measurements supply luminance, contrast, a Laplacian blur estimate, composition, and compact spatial/color descriptors. Temporal descriptor differences estimate stability, and motion where optical flow is unavailable. These are heuristics, not a trained camera-shake classifier.
 
 Shot changes establish scene boundaries. Each scene is divided into useful regions that can support longer shots. A candidate stores its score components, semantic tags, subject bounds, capture date, representative frame, and strongest sampled time. The planner centers a shorter selection around that strongest time, within the candidate's bounds. Analysis sampling frequency does not force every shot to last half a second.
+
+`ClipSignalAnalyzer` adds two signals to each moment. Apple's built-in sound model reports what is heard, such as laughter, traffic, or waves. Sounds of people raise a moment's score, and sounds of a place raise it for Travel, Places, and Story. Optical flow measures real speed and direction. It replaces the frame-difference motion estimate where it runs, makes Cinematic prefer calm shots, and penalizes a cut where clear movement reverses. Both are optional, so a clip keeps working if a model cannot run.
 
 Decoded frames are released after each sample. Only compressed thumbnails and small descriptors remain in the analysis run. Thumbnails are written locally. Cross-clip descriptor distance groups probable duplicates. This comparison is deliberately conservative and approximate.
 
@@ -92,7 +94,7 @@ Three variants have different profiles, prior-choice penalties, seeds, and music
 
 Each style has a recipe in `Core/Recipes/recipes.json`: its shortest and longest shot, beats per shot in loud and quiet parts of the song, the most moments from one clip, how far a cut may move to reach a musical event, and how it opens and ends. Recipes change sequence scores in `RecipePacing`. They also reward the strongest moment at the song's biggest build, and penalize two face shots, two still shots, or two shots of the same size in a row. After the search, `fitShotLimits` lengthens shots below the shortest length by taking time from the longest ones. Rules are soft, so a small trip or locked moments can still produce an edit. A shot stays short if its moment is shorter than the limit.
 
-Shot size is a rough estimate from faces, subject size, and scene labels. Motion direction across a cut is not implemented, because the analyzer does not measure direction yet. Vision's models do not run in the iOS Simulator, so faces, labels, and subjects are all empty there. Rules that use them can only be checked on a device or with frames analyzed on a Mac.
+Shot size is a rough estimate from faces, subject size, and scene labels. Vision's models do not run in the iOS Simulator, so faces, labels, and subjects are all empty there. Rules that use them can only be checked on a device or with frames analyzed on a Mac.
 
 `EditPlanner` writes each edit's decision list from the plan, the song, and the recipe: punch-ins (Z1), beat pulses (Z2), slow push-ins (Z4), and slow pull-outs (Z5). The IDs come from the short-form edit spec. The list is worked out when an edit is built, so changing a shot can never leave a stale zoom behind. A shot has one kind of zoom. Slow moves need at least 1.5 seconds, the song's biggest moment gets a punch-in where the style allows one, and the two beats before it stay quiet. Sources smaller than the output are limited to 120%. `LookCompositor` draws zooms around the subject and inside the picture, so they never spread into letterbox bars. Users cannot edit individual zooms yet.
 
@@ -188,7 +190,7 @@ In Debug builds, Project options → Editing decisions shows processing times, s
 - Synthetic illustrated media proves the media workflow. It does not prove editorial quality on every real trip.
 - Sparse sampling can miss brief moments in very long clips. Upgrade to hierarchical sampling around promising regions.
 - Recipe scores were tuned on one 13-clip trip. They need the wider test set of real trips, and a check on a device.
-- Motion, blur, exposure, and duplicate detection use practical heuristics. Add optical flow and calibrated feature-print or model embeddings behind the analysis boundary.
+- Motion, blur, exposure, and duplicate detection use practical heuristics. Add calibrated feature-print or model embeddings behind the analysis boundary.
 - Cropping uses a representative subject anchor. Add time-varying anchors for subject tracking.
 - Each style has one fixed look, with one strength per project. Shot correction is one setting per shot, so light that changes during a shot is not followed. HDR output is not supported.
 - Capture dates may be unavailable for selected media. Use imported order as a fallback and keep chronology soft.

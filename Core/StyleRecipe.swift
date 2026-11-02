@@ -66,6 +66,10 @@ struct RecipePacing: Sendable {
     private static let repeatedFacesWeight = 0.20
     private static let repeatedStillWeight = 0.08
     private static let repeatedScaleWeight = 0.06
+    private static let reversedMotionWeight = 0.12
+    /// Slower or more mixed movement than this has no clear direction.
+    private static let clearSpeed = 0.1
+    private static let clearAgreement = 0.6
     private static let buildWeight = 0.30
     /// A subject covering this much of the frame reads as a close shot.
     private static let closeSubjectArea = 0.60
@@ -198,6 +202,18 @@ struct RecipePacing: Sendable {
             value -= Self.repeatedStillWeight
         }
         if scale(of: moment) == scale(of: previous) { value -= Self.repeatedScaleWeight }
+        if movesAgainst(previous, moment) { value -= Self.reversedMotionWeight }
         return value
+    }
+
+    /// True when both shots move clearly and one heads back against the other,
+    /// which reads as a jolt at the cut.
+    func movesAgainst(_ first: CandidateMoment, _ second: CandidateMoment) -> Bool {
+        guard let a = first.signals, let b = second.signals,
+              let speedA = a.speed, let speedB = b.speed, let turnA = a.direction, let turnB = b.direction,
+              let agreeA = a.agreement, let agreeB = b.agreement,
+              speedA >= Self.clearSpeed, speedB >= Self.clearSpeed,
+              agreeA >= Self.clearAgreement, agreeB >= Self.clearAgreement else { return false }
+        return cos(turnA - turnB) < -0.5
     }
 }
