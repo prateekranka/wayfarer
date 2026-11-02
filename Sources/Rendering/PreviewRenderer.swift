@@ -16,7 +16,8 @@ actor PreviewRenderer {
         let subject: SubjectAnchor?
     }
     private struct CacheKey: Encodable {
-        let version = 9
+        let version = 10
+        let editVersion = EditPlanner.version
         let ranges: [SourceRange]
         /// The style look, its strength, and its math version. Shot correction
         /// depends only on the source ranges, which are already part of the key.

@@ -1,7 +1,7 @@
 import Foundation
 
 public enum EditIntent: String, Codable, CaseIterable, Identifiable, Sendable {
-    case beatSync, story, cinematic, highlights, people, places
+    case beatSync, story, cinematic, highlights, people, places, travel
     public var id: Self { self }
     public var title: String {
         switch self {
@@ -11,6 +11,7 @@ public enum EditIntent: String, Codable, CaseIterable, Identifiable, Sendable {
         case .highlights: "Highlights"
         case .people: "People"
         case .places: "Places"
+        case .travel: "Travel"
         }
     }
     public var subtitle: String {
@@ -21,6 +22,7 @@ public enum EditIntent: String, Codable, CaseIterable, Identifiable, Sendable {
         case .highlights: "All the unforgettable parts."
         case .people: "The people who made the trip."
         case .places: "A sense of somewhere."
+        case .travel: "Keep the journey moving."
         }
     }
     public var symbol: String {
@@ -31,6 +33,7 @@ public enum EditIntent: String, Codable, CaseIterable, Identifiable, Sendable {
         case .highlights: "sparkles"
         case .people: "person.2"
         case .places: "mountain.2"
+        case .travel: "airplane"
         }
     }
 }

@@ -16,6 +16,12 @@ struct DebugDecisionsView: View {
                     LabeledContent("Generation", value: String(format: "%.2f seconds", store.generationSeconds))
                 }
                 if let plan = store.selectedPlan {
+                    Section("Zooms") {
+                        let edits = EditPlanner.edits(for: plan, music: store.project?.music?.analysis, recipe: .recipe(for: plan.intent))
+                        ForEach(ZoomKind.allCases, id: \.self) { kind in
+                            LabeledContent(kind.rawValue, value: "\(edits.filter { $0.kind == kind }.count)")
+                        }
+                    }
                     Section("Sequence quality") {
                         LabeledContent("Used sources", value: "\(plan.metrics.usedSources)")
                         LabeledContent("Average shot", value: String(format: "%.2f seconds", plan.metrics.averageDuration))

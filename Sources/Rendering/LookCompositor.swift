@@ -22,14 +22,19 @@ final class LookInstruction: NSObject, AVVideoCompositionInstructionProtocol, @u
     let transform: CGAffineTransform
     let correction: ShotCorrection
     let look: ColorLook
+    let zooms: [PlannedEdit]
+    /// The point zooms center on, in the output frame with a top-left origin.
+    let focus: CGPoint
 
     init(timeRange: CMTimeRange, trackID: CMPersistentTrackID, transform: CGAffineTransform,
-         correction: ShotCorrection, look: ColorLook) {
+         correction: ShotCorrection, look: ColorLook, zooms: [PlannedEdit], focus: CGPoint) {
         self.timeRange = timeRange
         self.trackID = trackID
         self.transform = transform
         self.correction = correction
         self.look = look
+        self.zooms = zooms
+        self.focus = focus
         self.requiredSourceTrackIDs = [NSNumber(value: trackID)]
         super.init()
     }
@@ -119,7 +124,8 @@ final class LookCompositor: NSObject, AVVideoCompositing, @unchecked Sendable {
             // bars even when the graded shot is cropped. Grading a clamped
             // image and then cropping keeps letterbox bars pure black.
             let picture = shot.extent
-            shot = correct(shot.clampedToExtent(), with: instruction.correction)
+            shot = correct(zoom(shot, with: instruction, time: request.compositionTime, frameHeight: size.height).clampedToExtent(),
+                           with: instruction.correction)
             shot = grade(shot, with: instruction.look)
             shot = addGrain(to: shot, amount: instruction.look.grain,
                             time: request.compositionTime, in: frameRect)
@@ -129,6 +135,18 @@ final class LookCompositor: NSObject, AVVideoCompositing, @unchecked Sendable {
         frame = addVignette(to: frame, amount: instruction.look.vignette, in: frameRect)
         context.render(frame, to: output, bounds: frameRect, colorSpace: outputColorSpace)
         return output
+    }
+
+    /// Scales the picture around the subject, and stays inside the picture, so
+    /// a zoom never spreads into letterbox bars. Only ever zooms in.
+    private func zoom(_ image: CIImage, with instruction: LookInstruction, time: CMTime, frameHeight: CGFloat) -> CIImage {
+        let scale = instruction.zooms.map { $0.scale(at: time.seconds) }.max() ?? 1
+        guard scale > 1 else { return image }
+        let center = CGPoint(x: instruction.focus.x, y: frameHeight - instruction.focus.y)
+        let transform = CGAffineTransform(translationX: -center.x, y: -center.y)
+            .concatenating(CGAffineTransform(scaleX: scale, y: scale))
+            .concatenating(CGAffineTransform(translationX: center.x, y: center.y))
+        return image.transformed(by: transform).cropped(to: image.extent)
     }
 
     private static func flip(height: CGFloat) -> CGAffineTransform {

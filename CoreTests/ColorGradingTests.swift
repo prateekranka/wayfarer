@@ -88,7 +88,7 @@ private func linearLuma(_ shot: ShotMeasurement, _ correction: ShotCorrection) -
 @Test func lookSettingsScaleColorGrainAndVignette() {
     let look = ColorLook.style(for: .cinematic)
     let half = look.adjusted(by: LookSettings(strength: 0.5))
-    #expect(half.strength == 0.5)
+    #expect(half.strength == look.strength * 0.5)
     #expect(half.grain == look.grain * 0.5)
     #expect(half.vignette == look.vignette * 0.5)
     #expect(look.adjusted(by: LookSettings()) == look)
@@ -110,9 +110,11 @@ private func linearLuma(_ shot: ShotMeasurement, _ correction: ShotCorrection) -
 }
 
 @Test func lookStrengthBlendsTowardOriginal() {
-    var half = ColorLook.style(for: .beatSync)
+    var look = ColorLook.style(for: .beatSync)
+    look.strength = 1
+    let full = look.apply(sky)
+    var half = look
     half.strength = 0.5
-    let full = ColorLook.style(for: .beatSync).apply(sky)
     let mixed = half.apply(sky)
     #expect(abs(mixed.r - (sky.r + full.r) / 2) < 0.0001)
     #expect(abs(mixed.b - (sky.b + full.b) / 2) < 0.0001)

@@ -220,7 +220,7 @@ public struct LookSettings: Codable, Equatable, Sendable {
 public struct ColorLook: Codable, Hashable, Sendable, Identifiable {
     /// Change this when the look math or presets change, so cached previews
     /// are rendered again.
-    public static let version = 1
+    public static let version = 2
 
     public var id: String
     public var name: String
@@ -269,30 +269,34 @@ public struct ColorLook: Codable, Hashable, Sendable, Identifiable {
     public static func style(for intent: EditIntent) -> ColorLook {
         switch intent {
         case .beatSync:
-            ColorLook(id: "punchy", name: "Punchy", contrast: 0.35, saturation: 1.12, vibrance: 0.2,
+            ColorLook(id: "punchy", name: "Punchy", strength: 0.7, contrast: 0.35, saturation: 1.12, vibrance: 0.2,
                       highlightRollOff: 0.1, shadowTint: GradeRGB(-0.01, 0, 0.02),
                       highlightTint: GradeRGB(0.015, 0.005, -0.01), skinProtection: 0.3, vignette: 0.25)
         case .story:
-            ColorLook(id: "warm-memory", name: "Warm memory", warmth: 0.35, contrast: 0.15, saturation: 0.95,
+            ColorLook(id: "warm-memory", name: "Warm memory", strength: 0.6, warmth: 0.35, contrast: 0.15, saturation: 0.95,
                       vibrance: 0.1, blackLift: 0.035, highlightRollOff: 0.25,
                       shadowTint: GradeRGB(0.02, 0.01, -0.01), highlightTint: GradeRGB(0.02, 0.01, 0),
                       skinProtection: 0.5, grain: 0.02, vignette: 0.2)
         case .cinematic:
-            ColorLook(id: "film", name: "Film", warmth: 0.05, contrast: 0.3, saturation: 0.9, vibrance: 0.05,
+            ColorLook(id: "film", name: "Film", strength: 0.55, warmth: 0.05, contrast: 0.3, saturation: 0.9, vibrance: 0.05,
                       blackLift: 0.03, highlightRollOff: 0.3, shadowTint: GradeRGB(-0.035, 0.01, 0.03),
                       highlightTint: GradeRGB(0.035, 0.012, -0.025), skinProtection: 0.6,
                       grain: 0.025, vignette: 0.35)
         case .highlights:
-            ColorLook(id: "clean-pop", name: "Clean pop", warmth: 0.05, contrast: 0.2, saturation: 1.06,
+            ColorLook(id: "clean-pop", name: "Clean pop", strength: 0.65, warmth: 0.05, contrast: 0.2, saturation: 1.06,
                       vibrance: 0.25, highlightRollOff: 0.15, skinProtection: 0.3, vignette: 0.1)
         case .people:
-            ColorLook(id: "soft-skin", name: "Soft skin", warmth: 0.15, contrast: 0.1, saturation: 0.97,
+            ColorLook(id: "soft-skin", name: "Soft skin", strength: 0.5, warmth: 0.15, contrast: 0.1, saturation: 0.97,
                       vibrance: 0.15, blackLift: 0.015, highlightRollOff: 0.25,
                       highlightTint: GradeRGB(0.01, 0.005, 0), skinProtection: 0.9, grain: 0.01, vignette: 0.15)
         case .places:
-            ColorLook(id: "rich-color", name: "Rich color", contrast: 0.22, saturation: 1.05, vibrance: 0.4,
+            ColorLook(id: "rich-color", name: "Rich color", strength: 0.7, contrast: 0.22, saturation: 1.05, vibrance: 0.4,
                       highlightRollOff: 0.2, shadowTint: GradeRGB(-0.01, 0, 0.015),
                       skinProtection: 0.4, vignette: 0.2)
+        case .travel:
+            ColorLook(id: "journey", name: "Journey", strength: 0.6, warmth: 0.15, contrast: 0.2, saturation: 1.03,
+                      vibrance: 0.25, blackLift: 0.01, highlightRollOff: 0.2, skinProtection: 0.5,
+                      grain: 0.012, vignette: 0.12)
         }
     }
 

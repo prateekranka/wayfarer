@@ -6,8 +6,12 @@ test('turning the color look off keeps the edit, refreshes export and survives r
   if (process.env.WAYFARER_USE_INSTALLED !== '1') await device.installApp();
   await app.open();
   await tapVisibleControl(screen.getByTestId('create-montage'));
+  // The sheet is still sliding in when it first becomes visible.
+  await expect(screen.getByTestId('sample-12')).toBeVisible();
+  await new Promise((resolve) => setTimeout(resolve, 1_000));
   await tapVisibleControl(screen.getByTestId('sample-12'));
   await expect(screen.getByTestId('clip-count')).toContainText('12 clips', { timeout: 240_000 });
+  await new Promise((resolve) => setTimeout(resolve, 1_000));
   await screen.getByTestId('sample-music').tap();
   await expect(screen.getByTestId('make-reel')).toBeEnabled({ timeout: 120_000 });
   await tapControl(screen, screen.getByTestId('intent-cinematic'), 'down', 'make-reel');
@@ -16,6 +20,8 @@ test('turning the color look off keeps the edit, refreshes export and survives r
   const edit = await screen.getByTestId('selected-edit-name').textContent();
 
   await revealControl(screen, screen.getByTestId('look-enabled'), 'down', 'export-montage');
+  // Let scrolling stop, so the frame below is where the switch really is.
+  await new Promise((resolve) => setTimeout(resolve, 1_000));
   const row = await screen.getByTestId('look-enabled').boundingBox();
   if (!row) throw new Error('The color look switch has no accessibility frame');
   // A native switch responds only on its own control, at the row's trailing edge.

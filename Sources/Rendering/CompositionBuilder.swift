@@ -70,6 +70,7 @@ public actor CompositionBuilder {
         let timeRange: CMTimeRange
         let trackID: CMPersistentTrackID
         let transform: CGAffineTransform
+        let focus: CGPoint
     }
 
     /// Shot measurements by source file and range. Building the same edit
@@ -90,6 +91,7 @@ public actor CompositionBuilder {
         let renderSize = renderSize(for: project.outputRatio, preview: preview)
         var placedShots: [PlacedShot] = []
         var measurements: [ShotMeasurement?] = []
+        var scaleLimits: [Double] = []
         var audioParameters: [AVAudioMixInputParameters] = []
         var timeline = CMTime.zero
         var plannedEnd = 0.0
@@ -155,7 +157,7 @@ public actor CompositionBuilder {
 
             let naturalSize = try await sourceVideoTrack.load(.naturalSize)
             let preferredTransform = try await sourceVideoTrack.load(.preferredTransform)
-            let transform = placementTransform(
+            let placement = placementTransform(
                 naturalSize: naturalSize,
                 preferredTransform: preferredTransform,
                 subject: segment.subject,
@@ -163,7 +165,11 @@ public actor CompositionBuilder {
             )
             placedShots.append(PlacedShot(timeRange: CMTimeRange(start: timeline, duration: videoDuration),
                                           trackID: compositionVideoTrack.trackID,
-                                          transform: transform))
+                                          transform: placement.transform, focus: placement.focus))
+            // Judge resolution against final export size, so preview and export match.
+            let shortSide = min(abs(naturalSize.width), abs(naturalSize.height))
+            let outputShortSide = Double(min(project.outputRatio.width, project.outputRatio.height))
+            scaleLimits.append(Double(shortSide) < outputShortSide ? EditPlanner.lowResolutionLimit : .infinity)
             measurements.append(await measurement(for: asset, start: segment.sourceStartTime,
                                                   duration: segment.duration))
 
@@ -219,9 +225,12 @@ public actor CompositionBuilder {
         // Match shots across the whole edit, then apply the style's look.
         let corrections = ShotCorrection.matched(measurements)
         let look = ColorLook.style(for: plan.intent).adjusted(by: project.look)
+        let edits = EditPlanner.edits(for: plan, music: project.music?.analysis,
+                                      recipe: .recipe(for: plan.intent), scaleLimits: scaleLimits)
         let videoInstructions: [any AVVideoCompositionInstructionProtocol] = placedShots.enumerated().map { index, shot -> any AVVideoCompositionInstructionProtocol in
             LookInstruction(timeRange: shot.timeRange, trackID: shot.trackID, transform: shot.transform,
-                            correction: corrections[index], look: look)
+                            correction: corrections[index], look: look,
+                            zooms: edits.filter { $0.segmentID == plan.segments[index].id }, focus: shot.focus)
         }
 
         guard let snapshot = composition.copy() as? AVComposition else {
@@ -380,7 +389,7 @@ public actor CompositionBuilder {
     }
 
     private func placementTransform(naturalSize: CGSize, preferredTransform: CGAffineTransform,
-                                   subject: SubjectAnchor?, renderSize: CGSize) -> CGAffineTransform {
+                                   subject: SubjectAnchor?, renderSize: CGSize) -> (transform: CGAffineTransform, focus: CGPoint) {
         let sourceRect = CGRect(origin: .zero, size: naturalSize)
         let transformedRect = sourceRect.applying(preferredTransform)
         let orientedSize = transformedRect.standardized.size
@@ -389,7 +398,7 @@ public actor CompositionBuilder {
         )
         guard orientedSize.width > 0, orientedSize.height > 0,
               renderSize.width > 0, renderSize.height > 0 else {
-            return orient
+            return (orient, CGPoint(x: renderSize.width / 2, y: renderSize.height / 2))
         }
 
         let sourceAspect = orientedSize.width / orientedSize.height
@@ -401,6 +410,11 @@ public actor CompositionBuilder {
         let anchor = subject.map { CGPoint(x: $0.x + $0.width * 0.5,
                                             y: $0.y + $0.height * 0.5) }
             ?? CGPoint(x: 0.5, y: 0.5)
+        let sourceAnchor = CGPoint(x: anchor.x * orientedSize.width, y: anchor.y * orientedSize.height)
+        func focus(_ placement: CGAffineTransform) -> CGPoint {
+            let point = sourceAnchor.applying(placement)
+            return CGPoint(x: min(renderSize.width, max(0, point.x)), y: min(renderSize.height, max(0, point.y)))
+        }
         let subjectWidth = subject?.width ?? 0
         let needsLetterbox = sourceAspect > outputAspect &&
             (subject == nil || subjectWidth > visibleWidth || (subject?.height ?? 0) > visibleHeight)
@@ -412,8 +426,8 @@ public actor CompositionBuilder {
                                  height: orientedSize.height * fitScale)
             let translate = CGAffineTransform(translationX: (renderSize.width - fitSize.width) * 0.5,
                                                y: (renderSize.height - fitSize.height) * 0.5)
-            return orient.concatenating(CGAffineTransform(scaleX: fitScale, y: fitScale))
-                .concatenating(translate)
+            let placement = CGAffineTransform(scaleX: fitScale, y: fitScale).concatenating(translate)
+            return (orient.concatenating(placement), focus(placement))
         }
 
         let cropWidth = renderSize.width / fillScale
@@ -424,7 +438,7 @@ public actor CompositionBuilder {
                         orientedSize.height - cropHeight)
         let translate = CGAffineTransform(translationX: -cropX * fillScale,
                                            y: -cropY * fillScale)
-        return orient.concatenating(CGAffineTransform(scaleX: fillScale, y: fillScale))
-            .concatenating(translate)
+        let placement = CGAffineTransform(scaleX: fillScale, y: fillScale).concatenating(translate)
+        return (orient.concatenating(placement), focus(placement))
     }
 }

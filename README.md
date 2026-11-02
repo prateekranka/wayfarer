@@ -29,7 +29,7 @@ The app includes two public sample trips: 12 clips and 85 clips. These are bundl
 
 Create a Montage → choose videos from Photos or Files → automatic analysis → choose a song → choose length and feeling → Make My Reel → watch three edits → replace or lock moments → Try Another Edit → export → save to Photos or share.
 
-Supported feelings are Beat Sync, Story, Cinematic, Highlights, People, and Places. Story/Highlights, Calm/Energetic, and Longer shots/Fast cuts controls change planner parameters. Output formats are 9:16, 1:1, 4:5, and 16:9. Original sound has a global level.
+Supported feelings are Beat Sync, Story, Cinematic, Highlights, People, Places, and Travel. Story/Highlights, Calm/Energetic, and Longer shots/Fast cuts controls change planner parameters. Output formats are 9:16, 1:1, 4:5, and 16:9. Original sound has a global level.
 
 The app refuses a song that is too short and footage that cannot fill the requested length. It does not secretly loop music, freeze frames, or repeat overlapping source ranges to reach a duration.
 
@@ -86,6 +86,8 @@ Each style has a recipe in `Core/Recipes/recipes.json`: its shortest and longest
 
 Shot size is a rough estimate from faces, subject size, and scene labels. Motion direction across a cut is not implemented, because the analyzer does not measure direction yet. Vision's models do not run in the iOS Simulator, so faces, labels, and subjects are all empty there. Rules that use them can only be checked on a device or with frames analyzed on a Mac.
 
+`EditPlanner` writes each edit's decision list from the plan, the song, and the recipe: punch-ins (Z1), beat pulses (Z2), slow push-ins (Z4), and slow pull-outs (Z5). The IDs come from the short-form edit spec. The list is worked out when an edit is built, so changing a shot can never leave a stale zoom behind. A shot has one kind of zoom. Slow moves need at least 1.5 seconds, the song's biggest moment gets a punch-in where the style allows one, and the two beats before it stay quiet. Sources smaller than the output are limited to 120%. `LookCompositor` draws zooms around the subject and inside the picture, so they never spread into letterbox bars. Users cannot edit individual zooms yet.
+
 Locks retain the exact source range and duration. The planner inserts them near their saved timeline position. Timing is approximate when surrounding pacing changes. Rejected sources and moments are excluded. The result retains decision reasons, alternatives, and quality metrics.
 
 `PlanRefiner` changes a result without rerunning analysis. It validates source bounds, overlap, duration, and locks after replacement, resizing, movement, or removal.
@@ -116,8 +118,9 @@ Each edit style has its own look (`ColorLook.style(for:)`), applied automaticall
 | Highlights | Clean pop | Clear contrast, extra color in muted areas |
 | People | Soft skin | Gentle and warm, skin tones kept close to the original |
 | Places | Rich color | Extra color in skies and greenery |
+| Travel | Journey | Warm and clear, light grain, gentle vignette |
 
-The look's color is baked into a 33-point 3D LUT that Core Image applies in sRGB. Grain and vignette are added after the LUT. Every look keeps gray tones in order, stays in range, and keeps skin tones closer to the original. Pure tests in `CoreTests/ColorGradingTests.swift` check this.
+Looks run at 50–70% strength, so footage still looks like itself. The look's color is baked into a 33-point 3D LUT that Core Image applies in sRGB. Grain and vignette are added after the LUT. Every look keeps gray tones in order, stays in range, and keeps skin tones closer to the original. Pure tests in `CoreTests/ColorGradingTests.swift` check this.
 
 HDR clips are converted to SDR before drawing, and the output is tagged as Rec. 709. Changing the look math or presets requires a new `ColorLook.version`, so cached previews render again.
 

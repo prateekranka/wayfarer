@@ -34,6 +34,7 @@ public enum MomentScorer {
         case .highlights: return clamp(0.45 * f.quality + 0.35 * f.interest + 0.20 * f.novelty)
         case .people: return clamp(0.55 * f.people + 0.25 * f.faces + 0.20 * f.quality)
         case .places: return clamp(0.50 * f.scenery + 0.25 * f.composition + 0.25 * f.quality)
+        case .travel: return clamp(0.35 * f.scenery + 0.30 * f.interest + 0.20 * f.quality + 0.15 * f.motion)
         }
     }
 
@@ -491,7 +492,8 @@ public struct MontagePlanner: MontagePlanning, Sendable {
             .cinematic: ["Cinematic", "Cinematic · Wide", "Cinematic · Quiet"],
             .highlights: ["Highlights", "Highlights · Spark", "Highlights · Best Of"],
             .people: ["People", "People · Together", "People · Faces"],
-            .places: ["Places", "Places · Postcards", "Places · Details"]
+            .places: ["Places", "Places · Postcards", "Places · Details"],
+            .travel: ["Travel", "Travel · On the Move", "Travel · Slow Days"]
         ]
         return MontagePlan(id: id, name: names[request.intent]?[variant] ?? request.intent.title,
                            summary: summary(for: request.intent, variant: variant), intent: request.intent,
@@ -599,6 +601,7 @@ public struct MontagePlanner: MontagePlanning, Sendable {
         case .highlights: return ["The strongest moments, assembled with pace.", "A bright selection of standout scenes.", "A varied best-of cut."][variant]
         case .people: return ["The people who made the trip.", "A warm sequence of shared moments.", "Faces and connections lead the edit."][variant]
         case .places: return ["A sense of somewhere, from wide to close.", "A postcard-like path through the places.", "Details and landmarks shape the journey."][variant]
+        case .travel: return ["A moving diary of the trip.", "Quicker shots that keep the trip moving.", "A gentler pace through the days."][variant]
         }
     }
 
@@ -648,7 +651,7 @@ public struct MontagePlanner: MontagePlanning, Sendable {
         switch intent {
         case .beatSync, .highlights: desiredEnergy = 0.40 + 0.55 * energy
         case .cinematic: desiredEnergy = 0.20 + 0.50 * energy
-        case .story, .people, .places: desiredEnergy = 0.30 + 0.50 * energy
+        case .story, .people, .places, .travel: desiredEnergy = 0.30 + 0.50 * energy
         }
         // Calculate each window once. Sorting must not repeatedly scan long audio timelines.
         var ranked: [(start: Double, score: Double)] = []
@@ -690,6 +693,7 @@ public struct MontagePlanner: MontagePlanning, Sendable {
         case .cinematic: average = 3.0 + 1.6 * (1 - fastCuts) + 0.5 * stability
         case .highlights: average = 1.4 + 0.7 * (1 - fastCuts)
         case .people, .places: average = 1.8 + 0.7 * (1 - fastCuts)
+        case .travel: average = 1.2 + 0.8 * (1 - fastCuts)
         }
         let profileAdjustment: Double = profile == 1 ? 0.75 : profile == 2 ? 1.20 : 1.0
         let tasteMultiplier = tasteProfile?.durationMultiplier(for: intent) ?? 1

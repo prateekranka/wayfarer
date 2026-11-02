@@ -1,8 +1,9 @@
 {
-  "beatSync":   { "shortestShot": 0.4, "longestShot": 2.0, "beatsWhenLoud": 1, "beatsWhenQuiet": 2, "mostMomentsPerClip": 3, "cutTolerance": 0.28, "opening": "strongest", "ending": "peopleOrSunset" },
-  "story":      { "shortestShot": 1.2, "longestShot": 4.0, "beatsWhenLoud": 2, "beatsWhenQuiet": 4, "mostMomentsPerClip": 2, "cutTolerance": 0.25, "opening": "wide", "ending": "peopleOrSunset" },
-  "cinematic":  { "shortestShot": 2.5, "longestShot": 4.5, "beatsWhenLoud": 4, "beatsWhenQuiet": 8, "mostMomentsPerClip": 2, "cutTolerance": 0.35, "opening": "wide", "ending": "calm" },
-  "highlights": { "shortestShot": 0.8, "longestShot": 2.5, "beatsWhenLoud": 2, "beatsWhenQuiet": 4, "mostMomentsPerClip": 2, "cutTolerance": 0.25, "opening": "strongest", "ending": "peopleOrSunset" },
-  "people":     { "shortestShot": 1.0, "longestShot": 3.5, "beatsWhenLoud": 2, "beatsWhenQuiet": 4, "mostMomentsPerClip": 3, "cutTolerance": 0.25, "opening": "people", "ending": "peopleOrSunset" },
-  "places":     { "shortestShot": 1.0, "longestShot": 3.5, "beatsWhenLoud": 2, "beatsWhenQuiet": 4, "mostMomentsPerClip": 2, "cutTolerance": 0.25, "opening": "wide", "ending": "calm" }
+  "beatSync":   { "shortestShot": 0.4, "longestShot": 2.0, "beatsWhenLoud": 1, "beatsWhenQuiet": 2, "mostMomentsPerClip": 3, "cutTolerance": 0.28, "opening": "strongest", "ending": "peopleOrSunset", "zooms": ["Z1", "Z2"], "zoomIntensity": 0.7 },
+  "story":      { "shortestShot": 1.2, "longestShot": 4.0, "beatsWhenLoud": 2, "beatsWhenQuiet": 4, "mostMomentsPerClip": 2, "cutTolerance": 0.25, "opening": "wide", "ending": "peopleOrSunset", "zooms": ["Z4", "Z5"], "zoomIntensity": 0.5 },
+  "cinematic":  { "shortestShot": 2.5, "longestShot": 4.5, "beatsWhenLoud": 4, "beatsWhenQuiet": 8, "mostMomentsPerClip": 2, "cutTolerance": 0.35, "opening": "wide", "ending": "calm", "zooms": ["Z4", "Z5"], "zoomIntensity": 0.5 },
+  "highlights": { "shortestShot": 0.8, "longestShot": 2.5, "beatsWhenLoud": 2, "beatsWhenQuiet": 4, "mostMomentsPerClip": 2, "cutTolerance": 0.25, "opening": "strongest", "ending": "peopleOrSunset", "zooms": ["Z1", "Z2"], "zoomIntensity": 0.5 },
+  "people":     { "shortestShot": 1.0, "longestShot": 3.5, "beatsWhenLoud": 2, "beatsWhenQuiet": 4, "mostMomentsPerClip": 3, "cutTolerance": 0.25, "opening": "people", "ending": "peopleOrSunset", "zooms": ["Z1", "Z4"], "zoomIntensity": 0.4 },
+  "places":     { "shortestShot": 1.0, "longestShot": 3.5, "beatsWhenLoud": 2, "beatsWhenQuiet": 4, "mostMomentsPerClip": 2, "cutTolerance": 0.25, "opening": "wide", "ending": "calm", "zooms": ["Z4", "Z5"], "zoomIntensity": 0.5 },
+  "travel":     { "shortestShot": 0.8, "longestShot": 2.5, "beatsWhenLoud": 2, "beatsWhenQuiet": 4, "mostMomentsPerClip": 2, "cutTolerance": 0.25, "opening": "wide", "ending": "peopleOrSunset", "zooms": ["Z2", "Z4", "Z5"], "zoomIntensity": 0.5 }
 }

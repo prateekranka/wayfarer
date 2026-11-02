@@ -257,6 +257,7 @@ struct ReferenceDetailView: View {
                         case .cinematic: 3.8
                         case .highlights: 1.75
                         case .story, .people, .places: 2.2
+                        case .travel: 1.6
                         }
                         // A bounded preference, not a promise to copy exact cut lengths.
                         store.taste.set(.pacing, value: min(1, max(-1, (neutral - average) / neutral)), intent: intent)

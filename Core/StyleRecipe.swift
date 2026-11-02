@@ -16,17 +16,21 @@ public struct StyleRecipe: Codable, Equatable, Sendable {
     public var cutTolerance: Double
     public var opening: Opening
     public var ending: Ending
+    /// Which zooms this style may use, and how strong they are, from 0 to 1.
+    public var zooms: [ZoomKind]
+    public var zoomIntensity: Double
 
     public enum Opening: String, Codable, Sendable { case wide, people, strongest }
     public enum Ending: String, Codable, Sendable { case peopleOrSunset, calm }
 
     public init(shortestShot: Double, longestShot: Double, beatsWhenLoud: Double,
                 beatsWhenQuiet: Double, mostMomentsPerClip: Int, cutTolerance: Double,
-                opening: Opening, ending: Ending) {
+                opening: Opening, ending: Ending, zooms: [ZoomKind] = [], zoomIntensity: Double = 0) {
         self.shortestShot = shortestShot; self.longestShot = longestShot
         self.beatsWhenLoud = beatsWhenLoud; self.beatsWhenQuiet = beatsWhenQuiet
         self.mostMomentsPerClip = mostMomentsPerClip; self.cutTolerance = cutTolerance
         self.opening = opening; self.ending = ending
+        self.zooms = zooms; self.zoomIntensity = zoomIntensity
     }
 
     private static let recipes: [String: StyleRecipe] = {
@@ -79,14 +83,18 @@ struct RecipePacing: Sendable {
         self.musicStart = musicStart
         let motions = moments.map(\.features.motion).sorted()
         self.stillMotion = motions.isEmpty ? 0 : motions[motions.count / 2]
-        let builds = music.events.filter { $0.kind == .build }
-        let peak = builds.max { $0.strength < $1.strength }?.time
-            ?? music.energy.filter { $0.time >= musicStart && $0.time <= musicStart + targetDuration }
-                .max { $0.value < $1.value }?.time
-        self.peakTime = peak.flatMap { $0 >= musicStart && $0 <= musicStart + targetDuration ? $0 - musicStart : nil }
+        self.peakTime = Self.peakTime(in: music, musicStart: musicStart, duration: targetDuration)
         self.beatLength = music.bpm.flatMap { $0.isFinite && $0 > 0 ? 60 / $0 : nil }
         self.energy = music.energy.sorted { $0.time < $1.time }
         self.meanEnergy = energy.isEmpty ? 0 : energy.reduce(0) { $0 + $1.value } / Double(energy.count)
+    }
+
+    /// When the song's biggest moment arrives in the edit, if it falls inside it.
+    static func peakTime(in music: MusicAnalysis, musicStart: Double, duration: Double) -> Double? {
+        let inEdit = { (time: Double) in time >= musicStart && time <= musicStart + duration }
+        let peak = music.events.filter { $0.kind == .build && inEdit($0.time) }.max { $0.strength < $1.strength }?.time
+            ?? music.energy.filter { inEdit($0.time) }.max { $0.value < $1.value }?.time
+        return peak.map { $0 - musicStart }
     }
 
     /// The song's energy nearest a time. Samples can span a very long song.
