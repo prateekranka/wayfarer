@@ -96,6 +96,27 @@ Video tracks alternate at cuts. The final source retains bounded decoding contex
 
 Subject bounds guide cropping. Wide footage uses fit placement when an important subject would be cropped or no reliable subject is available. V1 does not add blurred backgrounds or animated crop tracking.
 
+## Color
+
+A custom video compositor (`LookCompositor`) draws every frame with Core Image. Preview and export use it the same way. For each frame it places and crops the shot, corrects it, applies the style look, then adds grain and a vignette. Letterbox bars stay pure black.
+
+Shot correction makes clips from different cameras and light look like one edit. When an edit is built, the builder reads three small frames from each shot and measures its average color, brightness, and brightest areas. `ShotCorrection.matched` then gives each shot a gentle exposure change and white-balance gains. The target brightness sits between a standard exposure and the edit's median shot, so a dark, moody trip stays a little darker. Night shots and shots with bright lights are brightened less. Strong color casts, such as sunsets, are mostly kept; only weak casts are fixed. Measurements are cached per source range. They use the whole frame, not only the cropped area.
+
+Each edit style has its own look (`ColorLook.style(for:)`), applied automatically:
+
+| Style | Look | Character |
+| --- | --- | --- |
+| Beat Sync | Punchy | Strong contrast and color, light vignette |
+| Story | Warm memory | Warm, soft blacks, gentle highlights, light grain |
+| Cinematic | Film | Cool shadows, warm highlights, soft highlights, grain, stronger vignette |
+| Highlights | Clean pop | Clear contrast, extra color in muted areas |
+| People | Soft skin | Gentle and warm, skin tones kept close to the original |
+| Places | Rich color | Extra color in skies and greenery |
+
+The look's color is baked into a 33-point 3D LUT that Core Image applies in sRGB. Grain and vignette are added after the LUT. Every look keeps gray tones in order, stays in range, and keeps skin tones closer to the original. Pure tests in `CoreTests/ColorGradingTests.swift` check this.
+
+HDR clips are converted to SDR before drawing, and the output is tagged as Rec. 709. Changing the look math or presets requires a new `ColorLook.version`, so cached previews render again. There is no user control for the look yet.
+
 Final export uses AVAssetExportSession's async API and state sequence. Vertical output is 1080 × 1920. The other ratios use 1080-class dimensions. The exporter writes a project-owned partial MP4 and commits it only after success. Cancellation or failure removes only that partial file and preserves the project.
 
 The primary format is high-quality H.264 MP4. Native Photos saving and the system share sheet use the actual exported file. Playback readiness and elapsed time come from AVPlayer observations.
@@ -151,6 +172,7 @@ In Debug builds, Project options → Editing decisions shows processing times, s
 - Sparse sampling can miss brief moments in very long clips. Upgrade to hierarchical sampling around promising regions.
 - Motion, blur, exposure, and duplicate detection use practical heuristics. Add optical flow and calibrated feature-print or model embeddings behind the analysis boundary.
 - Cropping uses a representative subject anchor. Add time-varying anchors for subject tracking.
+- Color looks are fixed per style and have no strength control. Shot correction is one setting per shot, so light that changes during a shot is not followed. HDR output is not supported.
 - Capture dates may be unavailable for selected media. Use imported order as a fallback and keep chronology soft.
 - Vocals, confirmed downbeats, smiles, and lyric matching remain future features.
 - Original sound uses a global level. Future audio-event analysis can raise laughter, waves, or speech selectively.

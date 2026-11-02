@@ -52,9 +52,12 @@ public struct CompositionBuildResult: @unchecked Sendable {
 ///
 /// The same assembly path serves previews and exports. A preview uses a lower
 /// render size but keeps the source ranges, transforms, crop anchors, audio
-/// mix, and timing identical to the export path. Source URLs are resolved from
+/// mix, color, and timing identical to the export path. Source URLs are resolved from
 /// `directory` and the file names stored in `MontageProject.assets` and
 /// `MontageProject.music`; missing files fail with `MontageError.invalidMedia`.
+///
+/// Frames are drawn by `LookCompositor`. Each shot gets a gentle exposure and
+/// white-balance fix so clips match, then the color look for the edit style.
 public actor CompositionBuilder {
     public init() {}
 
@@ -62,6 +65,17 @@ public actor CompositionBuilder {
         let formats: [CMFormatDescription]
         let track: AVMutableCompositionTrack
     }
+
+    private struct PlacedShot {
+        let timeRange: CMTimeRange
+        let trackID: CMPersistentTrackID
+        let transform: CGAffineTransform
+    }
+
+    /// Shot measurements by source file and range. Building the same edit
+    /// again, for example for export after preview, does not decode frames again.
+    private var measurementCache: [String: ShotMeasurement] = [:]
+    private static let maxCachedMeasurements = 600
 
     /// Builds a composition and its video/audio instructions.
     ///
@@ -74,7 +88,8 @@ public actor CompositionBuilder {
         let assetByID = Dictionary(uniqueKeysWithValues: project.assets.map { ($0.id, $0) })
         let composition = AVMutableComposition()
         let renderSize = renderSize(for: project.outputRatio, preview: preview)
-        var videoInstructions: [any AVVideoCompositionInstructionProtocol] = []
+        var placedShots: [PlacedShot] = []
+        var measurements: [ShotMeasurement?] = []
         var audioParameters: [AVAudioMixInputParameters] = []
         var timeline = CMTime.zero
         var plannedEnd = 0.0
@@ -140,24 +155,17 @@ public actor CompositionBuilder {
 
             let naturalSize = try await sourceVideoTrack.load(.naturalSize)
             let preferredTransform = try await sourceVideoTrack.load(.preferredTransform)
-            var layerConfiguration = AVVideoCompositionLayerInstruction.Configuration(
-                trackID: compositionVideoTrack.trackID
-            )
             let transform = placementTransform(
                 naturalSize: naturalSize,
                 preferredTransform: preferredTransform,
                 subject: segment.subject,
                 renderSize: renderSize
             )
-            layerConfiguration.setTransform(transform, at: timeline)
-            let layer = AVVideoCompositionLayerInstruction(configuration: layerConfiguration)
-
-            let instructionConfiguration = AVVideoCompositionInstruction.Configuration(
-                layerInstructions: [layer],
-                timeRange: CMTimeRange(start: timeline, duration: videoDuration)
-            )
-            let instruction = AVVideoCompositionInstruction(configuration: instructionConfiguration)
-            videoInstructions.append(instruction)
+            placedShots.append(PlacedShot(timeRange: CMTimeRange(start: timeline, duration: videoDuration),
+                                          trackID: compositionVideoTrack.trackID,
+                                          transform: transform))
+            measurements.append(await measurement(for: asset, start: segment.sourceStartTime,
+                                                  duration: segment.duration))
 
             let sourceAudioTracks = try await asset.loadTracks(withMediaType: .audio)
             if project.originalSound > 0, let sourceAudioTrack = sourceAudioTracks.first {
@@ -208,6 +216,14 @@ public actor CompositionBuilder {
             hasAudio = true
         }
 
+        // Match shots across the whole edit, then apply the style's look.
+        let corrections = ShotCorrection.matched(measurements)
+        let look = ColorLook.style(for: plan.intent)
+        let videoInstructions: [any AVVideoCompositionInstructionProtocol] = placedShots.enumerated().map { index, shot -> any AVVideoCompositionInstructionProtocol in
+            LookInstruction(timeRange: shot.timeRange, trackID: shot.trackID, transform: shot.transform,
+                            correction: corrections[index], look: look)
+        }
+
         guard let snapshot = composition.copy() as? AVComposition else {
             throw MontageError.invalidPlan("This edit could not be prepared for playback.")
         }
@@ -219,6 +235,12 @@ public actor CompositionBuilder {
         videoConfiguration.instructions = videoInstructions
         videoConfiguration.renderScale = 1
         videoConfiguration.renderSize = renderSize
+        videoConfiguration.customVideoCompositorClass = LookCompositor.self
+        // The compositor draws SDR frames. Tag the output to match, even when a
+        // source clip is HDR.
+        videoConfiguration.colorPrimaries = AVVideoColorPrimaries_ITU_R_709_2
+        videoConfiguration.colorTransferFunction = AVVideoTransferFunction_ITU_R_709_2
+        videoConfiguration.colorYCbCrMatrix = AVVideoYCbCrMatrix_ITU_R_709_2
         let videoComposition = AVVideoComposition(configuration: videoConfiguration)
         let (tracks, assetDuration) = try await snapshot.load(.tracks, .duration)
         let validation = CompositionValidationReporter()
@@ -276,6 +298,58 @@ public actor CompositionBuilder {
             rejectedSources: project.rejectedSourceIDs,
             rejectedMoments: project.rejectedMomentIDs
         )
+    }
+
+    /// Measures the average color and brightness of one shot from three small
+    /// frames. Returns nil when no frame can be read; that shot is not corrected.
+    private func measurement(for asset: AVURLAsset, start: Double, duration: Double) async -> ShotMeasurement? {
+        let key = "\(asset.url.path)|\(Int((start * 600).rounded()))|\(Int((duration * 600).rounded()))"
+        if let cached = measurementCache[key] { return cached }
+
+        let generator = AVAssetImageGenerator(asset: asset)
+        generator.appliesPreferredTrackTransform = true
+        generator.maximumSize = CGSize(width: 64, height: 64)
+        // Exact frames are not needed. A tolerance lets the decoder use nearby frames.
+        let tolerance = cmTime(min(0.25, duration * 0.2))
+        generator.requestedTimeToleranceBefore = tolerance
+        generator.requestedTimeToleranceAfter = tolerance
+
+        var frames: [ShotMeasurement] = []
+        for fraction in [0.2, 0.5, 0.8] {
+            if Task.isCancelled { return nil }
+            do {
+                let (image, _) = try await generator.image(at: cmTime(start + duration * fraction))
+                if let frame = Self.measure(image) { frames.append(frame) }
+            } catch {
+                // One unreadable frame does not block the edit.
+            }
+        }
+        guard let result = ShotMeasurement.combine(frames) else { return nil }
+        if measurementCache.count >= Self.maxCachedMeasurements { measurementCache.removeAll(keepingCapacity: true) }
+        measurementCache[key] = result
+        return result
+    }
+
+    private static func measure(_ image: CGImage) -> ShotMeasurement? {
+        let width = 32
+        let height = 32
+        guard let space = CGColorSpace(name: CGColorSpace.sRGB) else { return nil }
+        var pixels = [UInt8](repeating: 0, count: width * height * 4)
+        let drawn = pixels.withUnsafeMutableBytes { buffer -> Bool in
+            guard let context = CGContext(
+                data: buffer.baseAddress,
+                width: width,
+                height: height,
+                bitsPerComponent: 8,
+                bytesPerRow: width * 4,
+                space: space,
+                bitmapInfo: CGImageAlphaInfo.noneSkipLast.rawValue
+            ) else { return false }
+            context.interpolationQuality = .medium
+            context.draw(image, in: CGRect(x: 0, y: 0, width: width, height: height))
+            return true
+        }
+        return drawn ? ShotMeasurement(rgba: pixels) : nil
     }
 
     private func renderSize(for ratio: OutputRatio, preview: Bool) -> CGSize {
