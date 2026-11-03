@@ -62,6 +62,8 @@ public actor MusicAnalysisService: MusicAnalyzing {
         guard let analyzer = MusicSignalAnalyzer() else {
             throw MontageError.invalidMedia("This audio file cannot be analyzed on this device.")
         }
+        // Bars come from a trained model when it can run; otherwise the analyzer guesses them.
+        let bars = BarTracker()
         var hasSamples = false
         while let readySample = try await provider.next() {
             try Task.checkCancellation()
@@ -69,6 +71,7 @@ public actor MusicAnalysisService: MusicAnalyzing {
             guard !values.isEmpty else { continue }
             hasSamples = true
             analyzer.process(values)
+            bars?.process(values)
         }
         guard reader.status != .failed else {
             throw MontageError.invalidMedia("This audio file cannot be decoded on this device.")
@@ -76,7 +79,8 @@ public actor MusicAnalysisService: MusicAnalyzing {
         guard hasSamples else {
             throw MontageError.invalidMedia("This audio file contains no decodable PCM samples.")
         }
-        return analyzer.finish(duration: duration)
+        try Task.checkCancellation()
+        return analyzer.finish(duration: duration, barStarts: bars?.barStarts())
     }
 
     private func monoFloatSamples(from sampleBuffer: CMSampleBuffer) -> [Float] {

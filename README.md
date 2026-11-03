@@ -2,7 +2,7 @@
 
 Wayfarer is a native iPhone and iPad app that makes travel montages from raw clips, a song, and creative direction. The user chooses the feeling. The app chooses the moments, source ranges, sequence, and cuts.
 
-The app targets iOS and iPadOS 26 or later. Production code uses Apple frameworks only. There is no account, network client, cloud upload, analytics SDK, or OpenAI API integration.
+The app targets iOS and iPadOS 26 or later. Production code uses Apple frameworks only, plus one bundled on-device model: Beat This! (MIT license), which finds where bars start in a song. There is no account, network client, cloud upload, analytics SDK, or OpenAI API integration.
 
 ## Getting started
 
@@ -72,7 +72,9 @@ No smile, emotion, action, or location claim is fabricated when a classifier is 
 
 Beats come from a search across the whole song that favors strong hits and an even pace. The tempo estimate updates every two seconds, so beats can follow a song that speeds up or slows down. A preference near 120 BPM settles half-time and double-time, which can still be wrong for very slow or very fast songs.
 
-Bars come from bass hits and chord changes at each beat. The analyzer tries four and three beats per bar, and the bar position may shift during a song. If the evidence is weak, it reports no downbeats rather than guessing, and the planner uses strong beats instead. This is the common case: on five real songs, only one reported bars.
+Bars come from `BarTracker` in `Core`. It runs Beat This!, a small trained beat model from the Institute of Computational Perception, JKU Linz, converted to Core ML (`Core/Models/BeatThisSmall.mlmodelc`, 10 MB, license in `Core/Models/BeatThis-LICENSE.txt`). It builds the model's log mel spectrogram in Swift, scores the song in overlapping 30-second chunks on the GPU or CPU, and picks bar starts. On five real songs its bar starts match the original Python model exactly when given the same samples. The full-precision model is required: the half-precision one gives wrong results on the GPU, and the Neural Engine cannot compile it. `scripts/beat_this/README.md` explains how the model file was made.
+
+The analyzer keeps its own beats and moves each bar start onto the nearest one. If fewer than half of the bar starts land on a beat, the two disagree about the song and the bars are dropped. Without the model, bars come from bass hits and chord changes at each beat; if that evidence is weak, it reports no downbeats rather than guessing, and the planner uses strong beats instead. On five real songs the model gave bars on four, against one before. When this analyzer counts at double speed, a bar has eight beats.
 
 It also finds builds, which are rises lasting at least three seconds. Drops are the song's biggest sustained jumps, and the bass must come in too. Pauses are short gaps in the sound. Sections start where the sound changes between groups of four bars. Sections are not named as verse or chorus. Vocals and lyrics are not analyzed. `TimedLyric` provides the future domain boundary for legitimately obtained timed text.
 
@@ -194,7 +196,7 @@ In Debug builds, Project options → Editing decisions shows processing times, s
 - Cropping uses a representative subject anchor. Add time-varying anchors for subject tracking.
 - Each style has one fixed look, with one strength per project. Shot correction is one setting per shot, so light that changes during a shot is not followed. HDR output is not supported.
 - Capture dates may be unavailable for selected media. Use imported order as a fallback and keep chronology soft.
-- Vocals, smiles, and lyric matching remain future features. Downbeats are estimates, and accuracy on commercial songs has not been measured.
+- Vocals, smiles, and lyric matching remain future features. Bars come from a trained model and are still estimates. No hand-marked timings were available, so accuracy on commercial songs has not been measured, and the model has not yet run on a real iPhone.
 - Original sound uses a global level. Future audio-event analysis can raise laughter, waves, or speech selectively.
 - Hardware performance, large HDR collections, and iPad layouts require device-specific release validation.
 

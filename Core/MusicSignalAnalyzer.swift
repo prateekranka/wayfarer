@@ -120,8 +120,10 @@ public final class MusicSignalAnalyzer {
         max(0, min(frameCount - 1, Int(((time - Double(Self.fftSize - Self.hop) / 2 / Self.sampleRate) / Self.frameTime).rounded())))
     }
 
-    /// Finishes the song and returns its timeline.
-    public func finish(duration: Double) -> MusicAnalysis {
+    /// Finishes the song and returns its timeline. `barStarts` come from
+    /// `BarTracker`; when most of them land on beats found here, they set the
+    /// bars instead of this analyzer's own guess.
+    public func finish(duration: Double, barStarts: [Double]? = nil) -> MusicAnalysis {
         guard frameCount > 8 else { return MusicAnalysis(duration: duration, energy: [EnergySample(time: 0, value: 0)]) }
         let loudness = zip(zip(lowPower, midPower), highPower).map { pair, high in
             10 * log10f(pair.0 + pair.1 + high + 1e-10)
@@ -135,7 +137,7 @@ public final class MusicSignalAnalyzer {
         let tempo = estimateTempo(envelope)
         let beats = tempo.map { trackBeats(envelope, periods: $0.periods) } ?? []
         let bpm = medianBPM(beats)
-        let meter = findDownbeats(beats)
+        let meter = barStarts.flatMap { self.meter(from: $0, beats: beats) } ?? findDownbeats(beats)
         let silences = detectSilences(loudness, reference: reference)
         let builds = detectBuilds(loudness, reference: reference)
         let drops = detectDrops(loudness, reference: reference, hits: hits, duration: duration)
@@ -378,6 +380,25 @@ public final class MusicSignalAnalyzer {
         // land under 0.5, so they report no bars rather than a wrong guess.
         guard let best, best.contrast >= 1 else { return nil }
         return (best.beatsPerBar, best.downbeats)
+    }
+
+    /// Matches bar starts from the trained model to the nearest beat. When fewer
+    /// than half land on a beat, the two disagree about the song and neither is
+    /// trusted for bars.
+    private func meter(from barStarts: [Double], beats: [Int]) -> (beatsPerBar: Int, downbeats: [Int])? {
+        guard barStarts.count >= 4, !beats.isEmpty else { return nil }
+        let times = beats.map { time($0) }
+        var matched: [Int] = []
+        for start in barStarts {
+            guard let index = times.indices.min(by: { abs(times[$0] - start) < abs(times[$1] - start) }),
+                  abs(times[index] - start) <= 0.07, matched.last != index else { continue }
+            matched.append(index)
+        }
+        guard matched.count >= 4, Double(matched.count) >= Double(barStarts.count) * 0.5 else { return nil }
+        let gaps = zip(matched, matched.dropFirst()).map { $1 - $0 }.filter { (2...12).contains($0) }
+        let counts = Dictionary(grouping: gaps, by: { $0 }).mapValues(\.count)
+        guard let beatsPerBar = counts.max(by: { ($0.value, -$0.key) < ($1.value, -$1.key) })?.key else { return nil }
+        return (beatsPerBar, matched)
     }
 
     /// Picks the best bar position at each beat, and returns the downbeats.

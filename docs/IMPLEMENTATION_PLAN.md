@@ -2,7 +2,7 @@
 
 Source: independent PLAN_DRAFT v1, reviewed by the root. The user explicitly approved proceeding when the configured Advisor was unavailable. That fallback applies to this task only.
 
-The implementation targets iOS/iPadOS 26, uses Swift 6 strict concurrency, and keeps media ingestion, video analysis, audio analysis, pure planning, composition, persistence, and feature screens separate. Only Apple frameworks ship in the app. TesterArmy e2e drives all app behavior tests.
+The implementation targets iOS/iPadOS 26, uses Swift 6 strict concurrency, and keeps media ingestion, video analysis, audio analysis, pure planning, composition, persistence, and feature screens separate. Only Apple frameworks ship in the app, plus the bundled Beat This! bar model (MIT license) run through Core ML. TesterArmy e2e drives all app behavior tests.
 
 Work proceeds as a connected vertical slice: real encoded media → analysis → structured music → exact-duration plan → native preview → distinct variants → refinement/locks/rejections → MP4 export → Photos/share → persistence recovery.
 

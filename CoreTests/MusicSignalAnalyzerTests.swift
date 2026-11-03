@@ -231,6 +231,34 @@ func steadyTemposAreFound(bpm: Double, bars: Int) throws {
     #expect(try song.analyzed().builds?.allSatisfy { $0.rise <= 26 } == true)
 }
 
+@Test func barStartsOnBeatsSetTheBars() throws {
+    let track = groove(bpm: 120, bars: 16)
+    let analyzer = try #require(MusicSignalAnalyzer())
+    analyzer.process(track.song.samples)
+    // Bars that start on beat 3 of this analyzer's bars, as a model might hear them.
+    let starts = track.downbeats.map { $0 + 1 }
+    let music = analyzer.finish(duration: track.song.seconds, barStarts: starts)
+    #expect(music.beatsPerBar == 4)
+    #expect(recall(starts, in: times(music, [.downbeat])) >= 0.9)
+    #expect(recall(track.downbeats.dropFirst().map { $0 }, in: times(music, [.downbeat])) == 0)
+}
+
+@Test func barStartsOffTheBeatsAreIgnored() throws {
+    let track = groove(bpm: 120, bars: 16)
+    let analyzer = try #require(MusicSignalAnalyzer())
+    analyzer.process(track.song.samples)
+    let music = analyzer.finish(duration: track.song.seconds, barStarts: track.downbeats.map { $0 + 0.25 })
+    #expect(recall(track.downbeats, in: times(music, [.downbeat])) >= 0.85)
+}
+
+@Test func theBarModelHearsBarsInAGroove() throws {
+    let track = groove(bpm: 120, bars: 16)
+    let tracker = try #require(BarTracker())
+    tracker.process(track.song.samples)
+    let starts = try #require(tracker.barStarts())
+    #expect(recall(track.downbeats, in: starts, within: 0.07) >= 0.8)
+}
+
 @Test func barsSurviveASkippedBeat() throws {
     var track = groove(bpm: 120, bars: 12)
     let second = groove(bpm: 120, bars: 12)
