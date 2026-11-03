@@ -345,12 +345,32 @@ public struct MontageProject: Codable, Identifiable, Sendable, Equatable {
     public var warnings: [String] = []
     /// Optional so projects saved before this setting existed still decode.
     public var lookSettings: LookSettings?
+    /// Optional for the same reason. Projects saved before titles existed keep
+    /// no title, so their exports still match what people saw.
+    public var textSettings: TextSettings?
     public init(id: UUID = UUID(), name: String, createdAt: Date = Date()) {
         self.id = id; self.name = name; self.createdAt = createdAt
+        textSettings = TextSettings()
     }
     public var look: LookSettings {
         get { lookSettings ?? LookSettings() }
         set { lookSettings = newValue }
+    }
+    public var text: TextSettings {
+        get { textSettings ?? TextSettings(isEnabled: false) }
+        set { textSettings = newValue }
+    }
+    /// The title to show, or nil when titles are off.
+    public var titleText: String? {
+        guard text.isEnabled else { return nil }
+        let title = text.title ?? name
+        return title.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty ? nil : title
+    }
+    /// The line under the title, or nil when there is none.
+    public var subtitleText: String? {
+        guard text.isEnabled else { return nil }
+        let subtitle = text.subtitle ?? TextSettings.dateLine(for: assets.compactMap(\.timestamp))
+        return subtitle?.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty == false ? subtitle : nil
     }
     public var planningSettings: PlanningSettings {
         PlanningSettings(duration: targetDuration, intent: intent, parameters: parameters,

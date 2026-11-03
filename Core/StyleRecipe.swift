@@ -21,6 +21,8 @@ public struct StyleRecipe: Codable, Equatable, Sendable {
     public var zoomIntensity: Double
     /// Whether shots get shorter as a build rises toward its payoff.
     public var acceleratesIntoBuilds: Bool
+    /// How the style shows its title. Optional so a recipe without one still loads.
+    public var text: TextLook?
 
     public enum Opening: String, Codable, Sendable { case wide, people, strongest }
     public enum Ending: String, Codable, Sendable { case peopleOrSunset, calm }
@@ -28,13 +30,14 @@ public struct StyleRecipe: Codable, Equatable, Sendable {
     public init(shortestShot: Double, longestShot: Double, beatsWhenLoud: Double,
                 beatsWhenQuiet: Double, mostMomentsPerClip: Int, cutTolerance: Double,
                 opening: Opening, ending: Ending, zooms: [ZoomKind] = [], zoomIntensity: Double = 0,
-                acceleratesIntoBuilds: Bool = false) {
+                acceleratesIntoBuilds: Bool = false, text: TextLook? = nil) {
         self.shortestShot = shortestShot; self.longestShot = longestShot
         self.beatsWhenLoud = beatsWhenLoud; self.beatsWhenQuiet = beatsWhenQuiet
         self.mostMomentsPerClip = mostMomentsPerClip; self.cutTolerance = cutTolerance
         self.opening = opening; self.ending = ending
         self.zooms = zooms; self.zoomIntensity = zoomIntensity
         self.acceleratesIntoBuilds = acceleratesIntoBuilds
+        self.text = text
     }
 
     private static let recipes: [String: StyleRecipe] = {

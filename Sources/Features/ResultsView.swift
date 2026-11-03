@@ -70,6 +70,7 @@ struct ResultsView: View {
                     .accessibilityIdentifier("edit-pager")
                     variantSelector
                     LookControls()
+                    TextControls()
                     let layout = dynamicTypeSize.isAccessibilitySize ? AnyLayout(VStackLayout(alignment: .leading, spacing: 4)) : AnyLayout(HStackLayout(spacing: 16))
                     layout {
                         Button { showEditor = true } label: {
@@ -160,6 +161,60 @@ struct LookControls: View {
     }
 }
 
+/// The title switch and its words. Text saves when typing ends, so each key
+/// press does not rebuild the preview.
+struct TextControls: View {
+    @Environment(AppStore.self) private var store
+    @State private var title = ""
+    @State private var subtitle = ""
+    @FocusState private var focused: Field?
+    private enum Field { case title, subtitle }
+    private var settings: TextSettings { store.project?.text ?? TextSettings(isEnabled: false) }
+    private var styleName: String { store.selectedPlan.map { TextLook.style(for: $0.intent).name } ?? "Style" }
+    var body: some View {
+        VStack(alignment: .leading, spacing: 4) {
+            Toggle(isOn: Binding(get: { settings.isEnabled }, set: { value in store.update { $0.text.isEnabled = value } })) {
+                VStack(alignment: .leading, spacing: 2) {
+                    Text("Title").font(.subheadline.weight(.semibold))
+                    Text(styleName).font(.caption).foregroundStyle(Theme.secondary)
+                }
+            }.frame(minHeight: 44).accessibilityIdentifier("text-enabled")
+            if settings.isEnabled {
+                TextField(store.project?.name ?? "Title", text: $title)
+                    .focused($focused, equals: .title).submitLabel(.done)
+                    .frame(minHeight: 44).accessibilityIdentifier("text-title")
+                TextField("Line under the title", text: $subtitle)
+                    .focused($focused, equals: .subtitle).submitLabel(.done)
+                    .font(.subheadline).frame(minHeight: 44).accessibilityIdentifier("text-subtitle")
+            }
+        }
+        .toolbar {
+            ToolbarItemGroup(placement: .keyboard) {
+                Spacer()
+                Button("Done") { focused = nil }.accessibilityIdentifier("close-title-keyboard")
+            }
+        }
+        .onAppear(perform: load)
+        .onChange(of: store.project?.id) { _, _ in load() }
+        .onChange(of: settings.isEnabled) { _, _ in load() }
+        .onChange(of: focused) { old, _ in if old != nil { save() } }
+        .onSubmit(save)
+    }
+    private func load() {
+        title = store.project?.titleText ?? settings.title ?? ""
+        subtitle = store.project?.subtitleText ?? settings.subtitle ?? ""
+    }
+    private func save() {
+        guard let project = store.project else { return }
+        // Keep following the project's name and dates until someone changes them.
+        let newTitle: String? = title == (project.text.title ?? project.name) ? project.text.title : title
+        let dates = TextSettings.dateLine(for: project.assets.compactMap(\.timestamp)) ?? ""
+        let newSubtitle: String? = subtitle == (project.text.subtitle ?? dates) ? project.text.subtitle : subtitle
+        guard newTitle != project.text.title || newSubtitle != project.text.subtitle else { return }
+        store.update { $0.text.title = newTitle; $0.text.subtitle = newSubtitle }
+    }
+}
+
 struct EditStyleInfoView: View {
     @Environment(\.dismiss) private var dismiss
     let plans: [MontagePlan]
@@ -205,6 +260,7 @@ struct MontagePlayer: View {
         let ratio: OutputRatio?
         let originalSound: Double?
         let look: LookSettings?
+        let text: TextSettings?
         let musicFile: String?
         let useProxy: Bool
         let needsGeneration: Bool
@@ -213,7 +269,7 @@ struct MontagePlayer: View {
     }
     private var configuration: PreviewConfiguration {
         PreviewConfiguration(plan: plan, ratio: store.project?.outputRatio,
-            originalSound: store.project?.originalSound, look: store.project?.look, musicFile: store.project?.music?.fileName,
+            originalSound: store.project?.originalSound, look: store.project?.look, text: store.project?.textSettings, musicFile: store.project?.music?.fileName,
             useProxy: useProxy, needsGeneration: store.project?.needsGeneration == true,
             isSelected: isSelected, isActive: isActive)
     }

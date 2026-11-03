@@ -71,6 +71,8 @@ public actor CompositionBuilder {
         let trackID: CMPersistentTrackID
         let transform: CGAffineTransform
         let focus: CGPoint
+        /// The subject's top and bottom as shares of the frame's height, if known.
+        let subjectSpan: ClosedRange<Double>?
     }
 
     /// Shot measurements by source file and range. Building the same edit
@@ -165,7 +167,8 @@ public actor CompositionBuilder {
             )
             placedShots.append(PlacedShot(timeRange: CMTimeRange(start: timeline, duration: videoDuration),
                                           trackID: compositionVideoTrack.trackID,
-                                          transform: placement.transform, focus: placement.focus))
+                                          transform: placement.transform, focus: placement.focus,
+                                          subjectSpan: placement.subjectSpan))
             // Judge resolution against final export size, so preview and export match.
             let shortSide = min(abs(naturalSize.width), abs(naturalSize.height))
             let outputShortSide = Double(min(project.outputRatio.width, project.outputRatio.height))
@@ -227,10 +230,12 @@ public actor CompositionBuilder {
         let look = ColorLook.style(for: plan.intent).adjusted(by: project.look)
         let edits = EditPlanner.edits(for: plan, music: project.music?.analysis,
                                       recipe: .recipe(for: plan.intent), scaleLimits: scaleLimits)
+        let texts = textLayers(project: project, plan: plan, shots: placedShots, renderSize: renderSize)
         let videoInstructions: [any AVVideoCompositionInstructionProtocol] = placedShots.enumerated().map { index, shot -> any AVVideoCompositionInstructionProtocol in
             LookInstruction(timeRange: shot.timeRange, trackID: shot.trackID, transform: shot.transform,
                             correction: corrections[index], look: look,
-                            zooms: edits.filter { $0.segmentID == plan.segments[index].id }, focus: shot.focus)
+                            zooms: edits.filter { $0.segmentID == plan.segments[index].id }, focus: shot.focus,
+                            texts: texts)
         }
 
         guard let snapshot = composition.copy() as? AVComposition else {
@@ -295,6 +300,21 @@ public actor CompositionBuilder {
                            directory: URL) async throws -> AVPlayerItem {
         let assembly = try await build(project: project, plan: plan, directory: directory, preview: true)
         return await assembly.playerItem
+    }
+
+    /// Times the title to the music in the style's text look, and moves it
+    /// away from any subject it would cover.
+    private func textLayers(project: MontageProject, plan: MontagePlan, shots: [PlacedShot],
+                            renderSize: CGSize) -> [TextLayer] {
+        guard let title = project.titleText else { return [] }
+        let look = TextLook.style(for: plan.intent)
+        let cues = TextPlanner.cues(title: title, subtitle: project.subtitleText, look: look, plan: plan,
+                                    music: project.music?.analysis)
+        guard let start = cues.map(\.start).min(), let end = cues.map(\.end).max() else { return [] }
+        let subjects = shots.filter { $0.timeRange.start.seconds < end && $0.timeRange.end.seconds > start }
+            .compactMap(\.subjectSpan)
+        let placement = TextPlanner.placement(look.placement, avoiding: subjects)
+        return TextRenderer.layers(cues: cues, look: look, placement: placement, renderSize: renderSize)
     }
 
     private func validate(project: MontageProject, plan: MontagePlan) throws {
@@ -389,7 +409,8 @@ public actor CompositionBuilder {
     }
 
     private func placementTransform(naturalSize: CGSize, preferredTransform: CGAffineTransform,
-                                   subject: SubjectAnchor?, renderSize: CGSize) -> (transform: CGAffineTransform, focus: CGPoint) {
+                                   subject: SubjectAnchor?, renderSize: CGSize)
+        -> (transform: CGAffineTransform, focus: CGPoint, subjectSpan: ClosedRange<Double>?) {
         let sourceRect = CGRect(origin: .zero, size: naturalSize)
         let transformedRect = sourceRect.applying(preferredTransform)
         let orientedSize = transformedRect.standardized.size
@@ -398,7 +419,7 @@ public actor CompositionBuilder {
         )
         guard orientedSize.width > 0, orientedSize.height > 0,
               renderSize.width > 0, renderSize.height > 0 else {
-            return (orient, CGPoint(x: renderSize.width / 2, y: renderSize.height / 2))
+            return (orient, CGPoint(x: renderSize.width / 2, y: renderSize.height / 2), nil)
         }
 
         let sourceAspect = orientedSize.width / orientedSize.height
@@ -415,6 +436,13 @@ public actor CompositionBuilder {
             let point = sourceAnchor.applying(placement)
             return CGPoint(x: min(renderSize.width, max(0, point.x)), y: min(renderSize.height, max(0, point.y)))
         }
+        func span(_ placement: CGAffineTransform) -> ClosedRange<Double>? {
+            guard let subject else { return nil }
+            let top = CGPoint(x: 0, y: subject.y * orientedSize.height).applying(placement).y / renderSize.height
+            let bottom = CGPoint(x: 0, y: (subject.y + subject.height) * orientedSize.height).applying(placement).y / renderSize.height
+            let low = min(1, max(0, min(top, bottom))), high = min(1, max(0, max(top, bottom)))
+            return high > low ? Double(low)...Double(high) : nil
+        }
         let subjectWidth = subject?.width ?? 0
         let needsLetterbox = sourceAspect > outputAspect &&
             (subject == nil || subjectWidth > visibleWidth || (subject?.height ?? 0) > visibleHeight)
@@ -427,7 +455,7 @@ public actor CompositionBuilder {
             let translate = CGAffineTransform(translationX: (renderSize.width - fitSize.width) * 0.5,
                                                y: (renderSize.height - fitSize.height) * 0.5)
             let placement = CGAffineTransform(scaleX: fitScale, y: fitScale).concatenating(translate)
-            return (orient.concatenating(placement), focus(placement))
+            return (orient.concatenating(placement), focus(placement), span(placement))
         }
 
         let cropWidth = renderSize.width / fillScale
@@ -439,6 +467,6 @@ public actor CompositionBuilder {
         let translate = CGAffineTransform(translationX: -cropX * fillScale,
                                            y: -cropY * fillScale)
         let placement = CGAffineTransform(scaleX: fillScale, y: fillScale).concatenating(translate)
-        return (orient.concatenating(placement), focus(placement))
+        return (orient.concatenating(placement), focus(placement), span(placement))
     }
 }

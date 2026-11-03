@@ -142,6 +142,28 @@ Final export uses AVAssetExportSession's async API and state sequence. Vertical 
 
 The primary format is high-quality H.264 MP4. Native Photos saving and the system share sheet use the actual exported file. Playback readiness and elapsed time come from AVPlayer observations.
 
+## Titles
+
+Each edit opens with a title: the project's name, with the trip's months underneath when clips have capture dates, such as "May – June 2026". Each style shows it its own way. Text looks live in the style recipes in `Core/Recipes/recipes.json`.
+
+| Style | Text look | Type | Place | Motion |
+| --- | --- | --- | --- | --- |
+| Beat Sync | Bold, on the beat | Black, uppercase | Center | Pops in on a bar, leaves on a cut |
+| Story | Quiet serif | Serif | Lower | Rises in, fades out |
+| Cinematic | Wide and slow | Uppercase, widely spaced | Center | Slow fade in and out |
+| Highlights | Rounded pop | Heavy, rounded | Upper | Pops in, leaves on a cut |
+| People | Warm and friendly | Semibold, rounded | Lower | Rises in, fades out |
+| Places | Spaced serif | Serif, uppercase, spaced | Upper | Fades in and out |
+| Travel | Typed postcard | Monospaced, uppercase | Lower | Types in, leaves on a cut |
+
+`TextPlanner` times the title to the music. It enters on the first bar start between 0.25 and 1.5 seconds into the edit, or the first strong beat when there are no bars. It aims to stay for the style's hold, then leaves on the nearest cut or bar start within 0.6 seconds. Styles that leave on a cut prefer cuts; styles that fade prefer bars. A title always stays at least two seconds after its entrance, so it can be read, and edits shorter than four seconds get no title. The subtitle follows once the title is mostly in, or once a typed title is finished.
+
+Text stays inside three bands that avoid the top and bottom edges, where platform buttons and captions sit. If a shot under the title has a known subject in the style's band, the title moves to the free band that covers the least of it. Faces and subjects come from Vision, which does not run in the iOS Simulator, so there the title always keeps the style's place.
+
+`TextRenderer` draws each line once with Core Text. A faint, soft-edged dark glow sits behind each line, and a wide and a tight shadow follow the letters, so white text stays readable on bright shots, including thin type. Long lines shrink to fit 86% of the frame's width. `LookCompositor` then moves, scales, and fades the drawn lines on each frame, after the color look, grain, and vignette, so the text is never tinted. Preview and export use the same path. Changing the timing or drawing requires a new `TextLook.version`, so cached previews render again.
+
+The results screen has a Title switch, the style's text look name, and fields for the title and the line under it. Words save when typing ends. An empty field shows no line. Until someone changes them, the fields follow the project's name and the trip's dates. Changes refresh the preview and clear a finished export, but do not require new edits. Projects saved before titles existed keep no title, so their exports still match what people saw.
+
 ## Persistence, caching, and privacy
 
 Projects live in Application Support under `Wayfarer/Projects/<UUID>`. Selected video and audio files are copied into the project package. Source fingerprints use streaming SHA-256. Duplicate selected content is skipped rather than analyzed again.
@@ -197,6 +219,7 @@ In Debug builds, Project options → Editing decisions shows processing times, s
 - Each style has one fixed look, with one strength per project. Shot correction is one setting per shot, so light that changes during a shot is not followed. HDR output is not supported.
 - Capture dates may be unavailable for selected media. Use imported order as a fallback and keep chronology soft.
 - Vocals, smiles, and lyric matching remain future features. Bars come from a trained model and are still estimates. No hand-marked timings were available, so accuracy on commercial songs has not been measured, and the model has not yet run on a real iPhone.
+- Titles are one opening line and a subtitle. Text does not wrap onto two lines, go behind subjects, follow lyrics, or name places. Text sizes and motion were judged on sample footage only.
 - Original sound uses a global level. Future audio-event analysis can raise laughter, waves, or speech selectively.
 - Hardware performance, large HDR collections, and iPad layouts require device-specific release validation.
 

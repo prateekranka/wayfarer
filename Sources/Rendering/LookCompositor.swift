@@ -25,9 +25,12 @@ final class LookInstruction: NSObject, AVVideoCompositionInstructionProtocol, @u
     let zooms: [PlannedEdit]
     /// The point zooms center on, in the output frame with a top-left origin.
     let focus: CGPoint
+    /// Titles drawn over the finished frame. Every shot carries all of them,
+    /// because a title can stay on screen across cuts.
+    let texts: [TextLayer]
 
     init(timeRange: CMTimeRange, trackID: CMPersistentTrackID, transform: CGAffineTransform,
-         correction: ShotCorrection, look: ColorLook, zooms: [PlannedEdit], focus: CGPoint) {
+         correction: ShotCorrection, look: ColorLook, zooms: [PlannedEdit], focus: CGPoint, texts: [TextLayer]) {
         self.timeRange = timeRange
         self.trackID = trackID
         self.transform = transform
@@ -35,6 +38,7 @@ final class LookInstruction: NSObject, AVVideoCompositionInstructionProtocol, @u
         self.look = look
         self.zooms = zooms
         self.focus = focus
+        self.texts = texts
         self.requiredSourceTrackIDs = [NSNumber(value: trackID)]
         super.init()
     }
@@ -53,7 +57,7 @@ enum LookCompositorError: LocalizedError {
 }
 
 /// Draws each frame with Core Image: place and crop the shot, correct it,
-/// apply the style look, then add grain and a vignette.
+/// apply the style look, add grain and a vignette, then draw any title.
 ///
 /// Preview and export both use this compositor, so they look the same.
 /// HDR sources arrive as SDR frames because `supportsHDRSourceFrames` is
@@ -133,6 +137,8 @@ final class LookCompositor: NSObject, AVVideoCompositing, @unchecked Sendable {
         }
 
         frame = addVignette(to: frame, amount: instruction.look.vignette, in: frameRect)
+        // Text goes on last, so the look never tints it.
+        frame = drawText(over: frame, layers: instruction.texts, time: request.compositionTime.seconds)
         context.render(frame, to: output, bounds: frameRect, colorSpace: outputColorSpace)
         return output
     }
@@ -238,5 +244,64 @@ final class LookCompositor: NSObject, AVVideoCompositing, @unchecked Sendable {
         vignette.radius = Float(hypot(rect.width, rect.height) * 0.32)
         vignette.intensity = Float(min(1, amount))
         return vignette.outputImage?.cropped(to: rect) ?? image
+    }
+
+    // MARK: Text
+
+    /// Moves, scales, and fades each line that is on screen at `time`.
+    private func drawText(over frame: CIImage, layers: [TextLayer], time: Double) -> CIImage {
+        var result = frame
+        for layer in layers where time >= layer.cue.start && time < layer.cue.end {
+            let progress = min(1, max(0, (time - layer.cue.start) / max(0.001, layer.cue.entrance)))
+            let eased = 1 - pow(1 - progress, 3)
+            var image = layer.image
+            var opacity = 1.0, scale = 1.0, lift = 0.0
+            switch layer.entrance {
+            case .fade:
+                opacity = eased
+            case .rise:
+                opacity = eased
+                lift = -(1 - eased) * image.extent.height * 0.4
+            case .pop:
+                opacity = min(1, progress * 3)
+                scale = 0.7 + 0.3 * Self.overshoot(progress)
+            case .typewriter:
+                // Reveal whole characters, left to right, without moving the line.
+                let count = min(layer.characterEdges.count, Int((progress * Double(layer.characterEdges.count)).rounded(.up)))
+                guard count > 0 else { continue }
+                image = image.cropped(to: CGRect(x: 0, y: 0, width: layer.characterEdges[count - 1],
+                                                 height: image.extent.height))
+            }
+            if layer.exit == .fade, layer.cue.exit > 0 {
+                opacity *= min(1, max(0, (layer.cue.end - time) / layer.cue.exit))
+            }
+            guard opacity > 0.001 else { continue }
+            let size = layer.image.extent.size
+            let placed = image.transformed(by: CGAffineTransform(translationX: -size.width / 2, y: -size.height / 2)
+                .concatenating(CGAffineTransform(scaleX: scale, y: scale))
+                .concatenating(CGAffineTransform(translationX: layer.center.x, y: layer.center.y + lift)))
+            result = Self.faded(placed, by: opacity).composited(over: result)
+        }
+        return result
+    }
+
+    /// Eases out past 1 and settles back, for a small bounce.
+    private static func overshoot(_ progress: Double) -> Double {
+        let back = 1.70158, shifted = progress - 1
+        return 1 + (back + 1) * pow(shifted, 3) + back * pow(shifted, 2)
+    }
+
+    /// Scales every channel, because the text image has premultiplied alpha.
+    private static func faded(_ image: CIImage, by opacity: Double) -> CIImage {
+        guard opacity < 1 else { return image }
+        let matrix = CIFilter.colorMatrix()
+        matrix.inputImage = image
+        let value = CGFloat(opacity)
+        matrix.rVector = CIVector(x: value, y: 0, z: 0, w: 0)
+        matrix.gVector = CIVector(x: 0, y: value, z: 0, w: 0)
+        matrix.bVector = CIVector(x: 0, y: 0, z: value, w: 0)
+        matrix.aVector = CIVector(x: 0, y: 0, z: 0, w: value)
+        matrix.biasVector = CIVector(x: 0, y: 0, z: 0, w: 0)
+        return matrix.outputImage ?? image
     }
 }

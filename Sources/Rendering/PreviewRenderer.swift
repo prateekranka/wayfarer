@@ -16,7 +16,7 @@ actor PreviewRenderer {
         let subject: SubjectAnchor?
     }
     private struct CacheKey: Encodable {
-        let version = 10
+        let version = 11
         let editVersion = EditPlanner.version
         let ranges: [SourceRange]
         /// The style look, its strength, and its math version. Shot correction
@@ -24,6 +24,11 @@ actor PreviewRenderer {
         let look: String
         let lookStrength: Double
         let lookVersion = ColorLook.version
+        /// The words on screen; their timing and look follow from the plan and style.
+        let title: String?
+        let subtitle: String?
+        let textStyle: String
+        let textVersion = TextLook.version
         let musicStart: Double
         let ratio: OutputRatio
         let originalSound: Double
@@ -37,7 +42,7 @@ actor PreviewRenderer {
         }
         let look = ColorLook.style(for: plan.intent).adjusted(by: project.look)
         let key = CacheKey(ranges: ranges, look: look.id, lookStrength: look.strength,
-                           musicStart: plan.musicStartTime, ratio: project.outputRatio,
+                           title: project.titleText, subtitle: project.subtitleText, textStyle: plan.intent.rawValue, musicStart: plan.musicStartTime, ratio: project.outputRatio,
                            originalSound: project.originalSound, musicFile: project.music?.fileName)
         let encoder = JSONEncoder(); encoder.outputFormatting = [.sortedKeys]
         let digest = SHA256.hash(data: try encoder.encode(key)).map { String(format: "%02x", $0) }.joined()
